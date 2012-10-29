@@ -1,0 +1,370 @@
+<!doctype html>
+<html>
+    <head>
+        <title>learningthree.js boiler plate for three.js</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+        <script>window.jQuery || document.write('<script src="/_client/js/libs/jquery-1.7.1.min.js"><\/script>')</script>        
+
+        <!-- r.49 edge -->
+        <script src="js/libs/three.js/Three.js"></script>
+        <!-- r.47 -->
+        <!--script src="vendor/three.js/Three.js"></script -->
+
+        <!-- could probably use modernizr for this -->
+        <script src="js/libs/three.js/Detector.js"></script>
+        <script src="js/libs/three.js/Stats.js"></script>
+
+        <script src="js/libs/threex/THREEx.screenshot.js"></script>
+        <script src="js/libs/threex/THREEx.FullScreen.js"></script>
+        <script src="js/libs/threex/THREEx.WindowResize.js"></script>
+        <!-- script src="vendor/threex.dragpancontrols.js"></script -->
+
+        <script src="js/libs/greensock/TweenLite.js"></script>
+        
+        <script src="js/libs/date-utils.js"></script>
+        
+        <link  href="css/main.css" rel="stylesheet"/>
+    </head>
+    <body>
+        <!-- three.js container -->
+        <div id="container"></div>
+        <!-- info on screen display -->
+        <div id="info">
+            <div class="top">
+                <a href="http://learningthreejs.com/blog/2011/12/20/boilerplate-for-three-js/" target="_blank">LearningThree.js</a>
+                boiler plate for
+                <a href="https://github.com/mrdoob/three.js/" target="_blank">three.js</a>
+                <!-- easiest place to pop this for the time being -->
+                <h1 id="dateView"></h1>
+            </div>
+            <div class="bottom" id="inlineDoc" >
+                - <i>p</i> for screenshot
+            </div> 
+        </div>
+        <div id="image">
+            
+        </div>
+        <script>
+         console.log("Hek");
+            var stats, scene, renderer, projector;
+            var camera, cameraControl;
+            var stageWidth, stageHeight;
+            var photos, startDate;
+            var items = [];
+            var offset = 2500;
+
+            var dateView = document.getElementById('dateView');
+
+            var fov = 35;
+            var near = offset;
+            var far = 300000;
+
+            var latency = 50; // on mousemove and scroll movement
+            var secondsPerPixel = 200; //-.000005; // number of seconds represented by a pixel
+            var scrollSpeed = 20;
+
+            // Camera positions.
+            var z = -436591; // offset
+            var x = 0;
+            var y = 0;
+
+            var fontSize = 100;
+            var fontFamily = "Arial";
+            var fontColor = "grey";
+
+            var mouseX, mouseY;
+
+            var paused;
+            var selected;
+
+
+            loadData();
+
+            function loadData() {
+                $.getJSON("http://cloud.local/services/GetPhotos.php", function (data) {
+                    photos = data.photos;
+                    initThree();
+                    createLabels();
+
+                    // start the render loop
+                    TweenLite.ticker.addEventListener("tick", animate);
+                });
+            }
+
+            //if( !init() )  animate();
+            // init the scene
+
+
+            function initThree() {
+
+                if (Detector.webgl) {
+                    renderer = new THREE.WebGLRenderer({
+                        antialias: true,
+                        // to get smoother output
+                        preserveDrawingBuffer: true // to allow screenshot
+                    });
+                    renderer.setClearColorHex(0xBBBBBB, 1);
+                    // uncomment if webgl is required
+                    //}else{
+                    //   Detector.addGetWebGLMessage();
+                    //   return true;
+                } else {
+                    renderer = new THREE.CanvasRenderer();
+                }
+
+                stageWidth = window.innerWidth;
+                stageHeight = window.innerHeight;
+
+                todayDate = new Date(); // new Date('2009', '10', '15').getTime(); // Setting today's date in the past for now as result set is old
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                document.getElementById('container').appendChild(renderer.domElement);
+
+                // add Stats.js - https://github.com/mrdoob/stats.js
+                stats = new Stats();
+                stats.domElement.style.position = 'absolute';
+                stats.domElement.style.bottom = '0px';
+                document.body.appendChild(stats.domElement);
+
+                // create a scene
+                scene = new THREE.Scene();
+
+                // put a camera in the scene
+                camera = new THREE.PerspectiveCamera(fov, stageWidth / stageHeight, near, far);
+                camera.position.set(0, stageHeight / 2, z);
+                scene.add(camera);
+
+                projector = new THREE.Projector();
+
+                // create a camera contol
+                //cameraControls = new THREEx.DragPanControls(camera)
+                // transparently support window resize
+                THREEx.WindowResize.bind(renderer, camera);
+                // allow 'p' to make screenshot
+                THREEx.Screenshot.bindKey(renderer);
+                // allow 'f' to go fullscreen where this feature is supported
+                if (THREEx.FullScreen.available()) {
+                    THREEx.FullScreen.bindKey();
+                    document.getElementById('inlineDoc').innerHTML += "- <i>f</i> for fullscreen";
+                }
+
+                document.addEventListener('DOMMouseScroll', scrollHandler, false);
+                document.addEventListener('mousewheel', scrollHandler, false);
+                document.addEventListener('mousemove', mouseMoveHandler, false);
+                document.addEventListener('mousedown', mouseDownHandler, false);
+            }
+
+            function createLabels() {
+
+                for (var i = 0; i < photos.length; i++) {
+
+                    var photo = photos[i];
+                    var canvas = getCanvas(photo.title);
+
+                    var texture = new THREE.Texture(canvas);
+                    texture.needsUpdate = true;
+
+                    var plane = new THREE.Mesh(new THREE.PlaneGeometry(canvas.width, canvas.height), new THREE.MeshBasicMaterial({
+                        map: texture,
+                        transparent: true,
+                        opacity: 0.75
+                    }));
+
+                    plane.geometry.dynamic = true;
+                    //plane.rotation.x = Math.PI / 2; // want to see the things
+                    plane.data = photo; // store the data on the plane
+                    var position = getPosition(photo.date);
+                    plane.position.z = position.z;
+                    plane.position.y = position.y;
+                    plane.position.x = position.x;
+
+                    items.push(plane);
+                    scene.add(plane);
+                }
+            }
+
+            // animation loop
+
+
+            function animate() {
+
+                if (!paused) {
+                    camera.position.x += (x - camera.position.x) / latency;
+                    camera.position.y += (y - camera.position.y) / latency;
+                    camera.position.z += (z - camera.position.z) / latency;
+                }
+
+                //console.log(camera.position.z);
+                var dt = (camera.position.z - offset) * secondsPerPixel;
+                //console.log(todayDate.toFormat('DD-MM-YYYY'));
+                var today = todayDate.clone();
+                var date = today.addSeconds(dt);
+
+                updateDate(date.toFormat('DD-MM-YYYY'));
+
+                // do the render
+                render();
+
+                // update stats
+                stats.update();
+            }
+
+            // render the scene
+
+
+            function render() {
+
+                // update camera controls
+                // cameraControls.update();
+                // actually render the scene
+                renderer.render(scene, camera);
+            }
+
+            function updateDate(date) {
+                dateView.innerHTML = date;
+            }
+
+            function scrollHandler(event) {
+                z -= event.wheelDeltaY * scrollSpeed;
+            }
+
+            function mouseMoveHandler(event) {
+
+                mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+                mouseY = (event.clientY / window.innerHeight) * 2 + 1;
+
+                x = (1 - (event.clientX / stageWidth)) * stageWidth;
+                x -= stageWidth / 2;
+                y = (event.clientY / stageHeight) * stageHeight;
+            }
+
+            function mouseDownHandler(event) {
+
+                event.preventDefault();
+
+                var vector = new THREE.Vector3(
+                (event.clientX / window.innerWidth) * 2 - 1, - (event.clientY / window.innerHeight) * 2 + 1, 0.5);
+
+                projector.unprojectVector(vector, camera);
+
+                var ray = new THREE.Ray(camera.position, vector.subSelf(camera.position).normalize());
+                var intersects = ray.intersectObjects(items);
+
+                if (intersects.length > 0) {
+
+                    var cameraPosition = camera.position;
+                    var intersect;
+
+                    for (var i = 0; i < intersects.length; i++) {
+                        intersect = intersects[i].object;
+                        // Wee hack to prevent selection of elements in front of the 
+                        // camera but not rendered due as they're outside near threshold
+                        if ((cameraPosition.z - intersect.position.z) >= offset) {
+                            selected = intersect;
+                        }
+                    }
+
+                    //                    console.log("date", selected.data.date);
+                    //                    console.log("x", selected.position.x);
+                    //                    console.log("y", selected.position.y);
+                    //                    console.log("z", selected.position.z);
+                    paused = true;
+
+                    TweenLite.killTweensOf(cameraPosition);
+                    TweenLite.to(cameraPosition, 1, {
+                        z: selected.position.z + offset,
+                        x: selected.position.x,
+                        y: selected.position.y - (stageHeight / 2) - 100,
+                        onComplete: tweenCompleteHandler
+                    });
+                }
+            }
+
+            function tweenCompleteHandler(e) {
+
+                z = camera.position.z;
+                x = camera.position.x;
+                y = camera.position.y;
+
+                //paused = false;
+                showAll(false, selected);
+            }
+
+            function showAll(show, omit) {
+                var item;
+                var l = items.length;
+                for (var i = 0; i < l; i++) {
+                    item = items[i];
+                    if (item !== omit) {
+                        item.visible = show;
+                    }
+                }
+            }
+
+            // Gets the position of an item in 3D space
+
+
+            function getPosition(date) {
+
+                var date = new Date(date);
+                var dt = todayDate.getSecondsBetween(date);
+
+                return {
+                    x: (Math.random() * stageWidth) - (stageWidth / 2),
+                    y: (Math.random() * stageHeight),
+                    z: dt * (1 / secondsPerPixel)
+                };
+            }
+
+            // Returns the date of the earliest photo
+            //            function getStartDate() {
+            //                var start = new Date().getTime();
+            //                var photo;
+            //                var date;
+            //                for (var i = 0; i < photos.length; i ++) {
+            //                    photo = photos[i];
+            //                    date = new Date(photo.date).getTime();
+            //                    if (date < start) start = date;
+            //                }
+            //                return start;
+            //            }
+            // Returns a canvas filled with supplied text
+
+
+            function getCanvas(text) {
+
+                var fontStyle = fontSize + "pt " + fontFamily;
+                var canvas = document.createElement('canvas');
+
+                // supposedly this value should be the same as the font points 
+                // value but in reality it seems to require approx 50% more
+                canvas.height = fontSize * 1.5;
+                canvas.width = getCanvasWidth(text, fontStyle);
+
+                var context = canvas.getContext('2d');
+                context.textBaseline = 'top';
+                context.font = fontSize + 'pt ' + fontFamily;
+                context.fillStyle = fontColor;
+                context.fillText(text, 0, 0);
+
+                return canvas;
+            }
+
+            // This seems a pretty ugly way to return the width of the canvas
+            // dynamically based on the size of the text it is filled with
+
+
+            function getCanvasWidth(text, fontStyle) {
+
+                var canvas = document.createElement('canvas');
+                var context = canvas.getContext('2d');
+                context.font = fontStyle;
+
+                return context.measureText(text).width;
+            }
+        </script>
+
+    </body>
+</html>
