@@ -1,30 +1,39 @@
 body {
-	overflow	: hidden;
-	padding		: 0;
-	margin		: 0;
-
-	color		: #222;
-	background-color: #BBB;
+	width: 100%;
+	overflow: hidden;
+	padding: 0;
+	margin: 0;
+	color: #fff;
+	background-color: #000;
 	font-family	: arial;
 	font-size	: 100%;
 }
-#info .top {
-	position	: absolute;
-	top		: 0px;
-	width		: 100%;
-	padding		: 5px;
-	text-align	: center;
+
+h1, h2 { padding: 0 20px; text-shadow: 1px 1px 1px #000; }
+h1 { float: left; font-size: 2em; } 
+h2 { float: right; font-size: 1.5em; }
+
+header, img, #three { position: absolute; top: 0; }
+
+header { width: 100%; z-index: 3; }
+img { width: 100%; z-index: 2; }
+#three { z-index: 1; }
+
+img { 
+	z-index: 2;
+    max-width: 100%;
+    max-height: 100%;
+    bottom: 0;
+    left: 0;
+    margin: auto;
+    overflow: auto;
+    position: fixed;
+    right: 0;
+    top: 0;
 }
-#info a {
-	color		: #66F;
-	text-decoration	: none;
-}
-#info a:hover {
-	text-decoration	: underline;
-}
-#info .bottom {
-	position	: absolute;
-	bottom		: 0px;
-	right		: 5px;
-	padding		: 5px;
-}
+
+.inactive { z-index: -1; }
+
+.rotate-0 { -webkit-transform: rotate(0deg); }
+.rotate-90 { -webkit-transform: rotate(90deg); }
+.rotate-270 { -webkit-transform: rotate(270deg); }

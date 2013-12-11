@@ -1,0 +1,27 @@
+{
+  "name": "cloud",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/net-uk-sweet/cloud.git"
+  },
+  "author": "net.uk.sweet",
+  "license": "BSD",
+  "bugs": {
+    "url": "https://github.com/net-uk-sweet/cloud/issues"
+  },
+  "dependencies": {
+    "node-flickr": "0.0.1",
+    "mongo": "~0.1.0",
+    "mongoose": "~3.8.1",
+    "q": "~0.9.7",
+    "async": "~0.2.9",
+    "underscore": "~1.5.2",
+    "express": "~3.4.6"
+  }
+}
