@@ -1,6 +1,7 @@
+html, body { overflow: hidden; height: 100%; }
+
 body {
-	width: 100%;
-	overflow: hidden;
+	width: 100%;1
 	padding: 0;
 	margin: 0;
 	color: #fff;
@@ -13,26 +14,27 @@ h1, h2 { padding: 0 20px; text-shadow: 1px 1px 1px #000; }
 h1 { float: left; font-size: 2em; } 
 h2 { float: right; font-size: 1.5em; }
 
-header, img, #three { position: absolute; top: 0; }
+header, #three, #media { position: absolute; top: 0; }
 
 header { width: 100%; z-index: 3; }
-img { width: 100%; z-index: 2; }
 #three { z-index: 1; }
+img { display: none; }
 
-img { 
-	z-index: 2;
-    max-width: 100%;
-    max-height: 100%;
-    bottom: 0;
-    left: 0;
-    margin: auto;
-    overflow: auto;
-    position: fixed;
-    right: 0;
-    top: 0;
+#media {
+	width: 100%;
+	height: 100%;
+	background-repeat: no-repeat;
+	background-position: center;
+	background-attachment: fixed;  
+	-webkit-background-size: cover;
+	-moz-background-size: cover;
+	-o-background-size: cover;
+	background-size: cover;
+
 }
 
 .inactive { z-index: -1; }
+.active { z-index: 2; }
 
 .rotate-0 { -webkit-transform: rotate(0deg); }
 .rotate-90 { -webkit-transform: rotate(90deg); }

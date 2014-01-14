@@ -17,7 +17,8 @@ var scene = (function($, _, TweenLite, THREE, THREEx) {
     var $title = $('h1'),
         $date = $('h2'),
         $three = $('#three'),
-        $media = $('img'); // might want to support video at some stage
+        $loader = $('img'), // might want to support video at some stage
+        $media = $('#media');
 
     // THREE settings
     var fov = 35,
@@ -118,18 +119,21 @@ var scene = (function($, _, TweenLite, THREE, THREEx) {
     function zoomCompleteHandler() {
 
         var src = _.findWhere(selected.data.size,
-            { label: 'Original' }).source;
+            { label: 'Large' }).source;
         
         loadMedia(src);
-
+/*
         $media.removeClass('rotate-0 rotate-90 rotate-270')
             .addClass('rotate-' + selected.data.rotation);
+*/
     }
 
     function loadMedia(path) {
 
-        if ($media.attr('src') !== path) {
-            $media.attr('src', path);
+        $media.css('background-image', 'url(' + path + ')');
+
+        if ($loader.attr('src') !== path) {
+            $loader.attr('src', path);
         } else {
             mediaLoadHandler();
         }
@@ -140,12 +144,12 @@ var scene = (function($, _, TweenLite, THREE, THREEx) {
     }
 
     function mediaHideHandler() {
-        $media.toggleClass('inactive');
+        $media.toggleClass('inactive active');
         paused = false;
     }
 
     function mediaLoadHandler() {
-        $media.toggleClass('inactive');
+        $media.toggleClass('active inactive');
         showMedia(true, mediaShowHandler);
     }
 
@@ -232,7 +236,7 @@ var scene = (function($, _, TweenLite, THREE, THREEx) {
         $three.on('mousemove', mouseMoveHandler);
         $three.on('mousedown', mouseDownHandler);
 
-        $media.on('load', mediaLoadHandler);
+        $loader.on('load', mediaLoadHandler);
         $media.on('click', mediaClickHandler);
 
         $media.addClass('inactive').css('opacity', 0);
