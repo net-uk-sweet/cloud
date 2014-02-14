@@ -1,7 +1,7 @@
 {
   "name": "cloud",
   "version": "0.0.0",
-  "description": "",
+  "description": "A 3d representation of my flickr field",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
