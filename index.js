@@ -8,7 +8,8 @@ var config = require('./config'),
 	async = require('async'),
 	port = process.env.port || config.port,
 	app = express(),
-	flickr = new Flickr({ 'api_key': config.key });
+	flickr = new Flickr({ 'api_key': config.key }),
+	db = require('./db');
 
 app.use(express.json());
 app.use(express.static(__dirname));
@@ -53,11 +54,26 @@ app.get('/api', function (req, res) {
 	res.send('cloud RESTful API is running');
 });
 
-app.get('/api/media', function(req, res) {
-	// res.send(data);
+// TODO: have the same API end point and use POST / GET to distinguish
+// POST to retrieve the data from flickr and add to the db
+// GET to get it from the db
+// Could alias a shell command to call update API
+app.get('/api/data', function(req, res) {
+
 	getPhotos(function(result) {
-		res.send(result);
+		// Delete everything in the db
+		db.photos.remove({ });
+		// And replace it with the results
+		db.photos.insert(result); // TODO: is this asynch?? how do I know if it has failed?
+		// And let the user know
+		res.send('Updated database');
 	});
+});
+
+app.get('/api/photos', function(req, res) {
+    db.photos.find().toArray(function (err, photos) {
+        res.json(photos);
+    });
 });
 
 // Launch server

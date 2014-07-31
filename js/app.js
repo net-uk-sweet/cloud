@@ -3,6 +3,18 @@ var scene = (function($, _, TweenLite, THREE, THREEx) {
 
     'use strict';
 
+    /*
+        TODO:
+            [ ] need more images
+            [ ] update flickr library (project won't build from package.json)
+            [ ] mongodb in package.json? er. no also mongoose?
+            [ ] cache image data references in mongodb
+            [ ] occasional fail in API call
+            [ ] image load indicator
+            [ ] rendering @ middle distance
+            [ ] update to use local dependencies
+    */
+
     // THREE actors
     var stats,
         scene,
@@ -253,7 +265,7 @@ var scene = (function($, _, TweenLite, THREE, THREEx) {
                 // to get smoother output
                 preserveDrawingBuffer: true // to allow screenshot
             });
-            //ßrenderer.setClearColorHex(0xBBBBBB, 1);
+            //renderer.setClearColorHex(0xBBBBBB, 1);
             // uncomment if webgl is required
             //}else{
             //   Detector.addGetWebGLMessage();
@@ -265,7 +277,8 @@ var scene = (function($, _, TweenLite, THREE, THREEx) {
         stageWidth = window.innerWidth;
         stageHeight = window.innerHeight;
 
-        todayDate = new Date(); // new Date('2009', '10', '15').getTime(); // Setting today's date in the past for now as result set is old
+        // Can set today to be in the past to avoid scrolling to see older pictures
+        todayDate = new Date(); // new Date('2009', '10', '15').getTime(); 
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.getElementById('three').appendChild(renderer.domElement);
 
@@ -332,7 +345,7 @@ var scene = (function($, _, TweenLite, THREE, THREEx) {
     return {
         init: function() {
             // Load the application data
-            $.getJSON('http://localhost:1337/api/media', dataLoadedHandler);
+            $.getJSON('http://localhost:1337/api/photos', dataLoadedHandler);
         }
     };
 
