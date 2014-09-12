@@ -1,7 +1,7 @@
 html, body { overflow: hidden; height: 100%; }
 
 body {
-	width: 100%;1
+	width: 100%;
 	padding: 0;
 	margin: 0;
 	color: #fff;
@@ -15,10 +15,25 @@ h1 { float: left; font-size: 2em; }
 h2 { float: right; font-size: 1.5em; }
 
 header, #three, #media { position: absolute; top: 0; }
-
-header { width: 100%; z-index: 3; }
+header { width: 100%; z-index: 3; pointer-events: none; }
 #three { z-index: 1; }
 img { display: none; }
+
+#controls { 
+	position: absolute; 
+	bottom: 0; 
+	width: 100%; 
+	z-index: 4; 
+	/*pointer-events: none;*/ 
+	background-color: #000;
+	opacity: 0.5;
+	padding: 20px;
+	border: 1px solid white;
+}
+
+#slider { 
+	width: 200px;
+}
 
 #media {
 	width: 100%;
