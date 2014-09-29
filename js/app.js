@@ -8,11 +8,14 @@ var scene = (function($, _, TweenLite, THREE, THREEx) {
             [x] need more images
             [ ] update flickr library (project won't build from package.json)
             [ ] mongodb in package.json? er. no also mongoose?
-            [ ] cache image data references in mongodb
+            [x] cache image data references in mongodb
             [ ] occasional fail in API call
             [ ] image load indicator
-            [ ] rendering @ middle distance (CSSRenderer)
-            [ ] update to use local dependencies
+            [x] rendering @ middle distance (CSSRenderer)
+            [x] update to use local dependencies
+            [x] plugin the clicks again
+            [?] bin off jquery
+            [ ] flip it
     */
 
     // THREE actors
@@ -32,30 +35,28 @@ var scene = (function($, _, TweenLite, THREE, THREEx) {
         $loader = $('img'), // might want to support video at some stage
         $media = $('#media'),
         $controls = $('#controls'),
-        $slider = $('#slider');
+        $slider = $('#slider'),
+        $reverse = $('#reverse');
 
     // THREE settings
     var fov = 35,
-        near = 500,
+        near = 0, //500,
         far = 300000;
 
     // General settings
     var latency = 50, // on mousemove and scroll movement
         secondsPerPixel = 600, // number of seconds represented by a pixel
-        secondsPerPixelChanged = false,
         scrollSpeed = 20,
         offset = 2500;
 
-    // Canvas text settings
-    var fontSize = 100,
-        fontFamily = 'Arial',
-        fontColor = 'white';
-
     // State
-    var position = { x: 0, y: 0, z: offset },
+    var cameraPosition = { x: 0, y: 0, z: offset },
         todayDate,
+        firstDate,
         paused,
         selected,
+        animating,
+        reversed,
         startz; // reset here if user stretches time
 
     function updateDate(date) {
@@ -63,51 +64,26 @@ var scene = (function($, _, TweenLite, THREE, THREEx) {
     }
 
     function mouseWheelHandler(event) {
-        position.z -= event.originalEvent.deltaY * scrollSpeed;
+        cameraPosition.z -= event.originalEvent.deltaY * scrollSpeed;
     }
 
     function mouseMoveHandler(event) {
-        position.x = stageWidth - event.clientX;
-        position.y = event.clientY;
+        cameraPosition.x = stageWidth - event.clientX;
+        cameraPosition.y = event.clientY;
     }
 
-    function mouseDownHandler(event) {
+    function zoomToTag(item) {
 
-        event.preventDefault();
+        selected = item;
+        paused = true;
 
-        var vector = new THREE.Vector3(
-            (event.clientX / window.innerWidth) * 2 - 1,
-            (event.clientY / window.innerHeight) * -2 + 1,
-            0.5
-        );
-
-        projector.unprojectVector(vector, camera);
-
-        var ray = new THREE.Ray(camera.position, vector.subSelf(camera.position).normalize());
-        var intersects = ray.intersectObjects(_.pluck(media, 'display'));
-        var cameraPosition = camera.position;
-
-        if (intersects.length) {
-
-            _.each(intersects, function(intersect) {
-                intersect = intersect.object;
-                // Wee hack to prevent selection of elements in front of the 
-                // camera but not rendered due as they're outside near threshold
-                if ((cameraPosition.z - intersect.position.z) >= offset) {
-                    selected = _.findWhere(media, { display: intersect });
-                }
-            });
-
-            paused = true;
-
-            TweenLite.killTweensOf(cameraPosition);
-            TweenLite.to(cameraPosition, 1, {
-                z: selected.display.position.z + offset,
-                x: selected.display.position.x,
-                y: selected.display.position.y,
-                onComplete: zoomCompleteHandler
-            });
-        }
+        TweenLite.killTweensOf(camera.position);
+        TweenLite.to(camera.position, 1, {
+            z: selected.display.position.z + offset,
+            x: selected.display.position.x,
+            y: selected.display.position.y,
+            onComplete: zoomCompleteHandler
+        });
     }
 
     function mediaClickHandler() {
@@ -128,6 +104,8 @@ var scene = (function($, _, TweenLite, THREE, THREEx) {
 
         var src = _.findWhere(selected.data.size, {  label: 'Large' }).source;
         loadMedia(src);
+
+        selected.$el.addClass('selected');
     }
 
     function loadMedia(path) {
@@ -164,9 +142,11 @@ var scene = (function($, _, TweenLite, THREE, THREEx) {
     }
 
     // Gets the position of an item in 3D space
-    function getPosition(date) {
-
-        var dt = todayDate.getSecondsBetween(date);
+    function getPosition(date, reverse) {
+        
+        var dt = reverse 
+            ? date.getSecondsBetween(firstDate)
+            : todayDate.getSecondsBetween(date);
 
         return {
             x: (Math.random() * stageWidth),
@@ -175,88 +155,98 @@ var scene = (function($, _, TweenLite, THREE, THREEx) {
         };
     }
 
-    function getCanvas(text) {
-
-        var fontStyle = fontSize + 'pt ' + fontFamily;
-        var canvas = document.createElement('canvas');
-
-        // supposedly this value should be the same as the font points 
-        // value but in reality it seems to require approx 50% more
-        canvas.height = fontSize * 1.5;
-        canvas.width = getCanvasWidth(text, fontStyle);
-
-        var context = canvas.getContext('2d');
-        context.textBaseline = 'top';
-        context.font = fontSize + 'pt ' + fontFamily;
-        context.fillStyle = fontColor;
-        context.fillText(text, 0, 0);
-
-        return canvas;
-    }
-
-    // This seems a pretty ugly way to return the width of the canvas
-    // dynamically based on the size of the text it is filled with
-    function getCanvasWidth(text, fontStyle) {
-
-        var canvas = document.createElement('canvas');
-
-        var context = canvas.getContext('2d');
-        context.font = fontStyle;
-
-        return context.measureText(text).width;
-    }
-
     function sliderInputHandler(e) {
+        
+        var len = media.length, item;
 
-        position.z = startz;
+        animating = true;
+        //cameraPosition.z = startz;
         secondsPerPixel = $slider[0].value;
-        secondsPerPixelChanged = true;
+
+        // Update cached z position of all items
+        for (var i = len - 1; i >= 0; i--) {
+            item = media[i];
+            item.position = getPosition(new Date(item.data.dates.taken));
+        };
+    }
+
+    function reverseClickHandler(e) {
+
+        var len = media.length, item;
+        
+        animating = true;
+        reversed = !reversed;
+        console.log(reversed);
+        for (var i = len - 1; i >= 0; i--) {
+            item = media[i];
+            item.position = getPosition(new Date(item.data.dates.taken), reversed);
+        };
     }
 
     function controlsMouseOverHandler(e) {
-        position.x = stageWidth / 2;
-        position.y = stageHeight / 2;
+        cameraPosition.x = stageWidth / 2;
+        cameraPosition.y = stageHeight / 2;
     }
 
     function tickHandler() {
 
-        var dt = (camera.position.z - offset) * secondsPerPixel,
-            today = todayDate.clone(),
-            date = today.addSeconds(dt);
+        var dt = (camera.position.z - offset) * secondsPerPixel, 
+            start, date, item, len = media.length;
 
-        if (!paused) {
-            camera.position.x += (position.x - camera.position.x) / latency;
-            camera.position.y += (position.y - camera.position.y) / latency;
-            camera.position.z += (position.z - camera.position.z) / latency;
+        // Could possibly switch the start date in the reverse function
+        // on time stretch we want to go to the set starting date aussi
+        if (reversed) {
+            dt *= -1;
+            start = firstDate;
+        } else {
+            start = todayDate;
         }
 
-        // Looping over everything in each frame has to be bad, but not sure how to avoid it
-        // Could optimise the method by using the same Date object here.
-        _.each(media, function(item) {
-            // console.log('ite)
-            var tmp = getPosition(new Date(item.data.dates.taken));
-            item.display.position.z += (tmp.z - item.display.position.z) / latency; 
-        });
+        date = start.clone().addSeconds(dt);
 
-        updateDate(date.toFormat('DD-MM-YYYY'));
+        // var dt = (camera.position.z - offset) * secondsPerPixel,
+        //     today = todayDate.clone(),
+        //     date = today.addSeconds(dt),
+        //     len = media.length, item;
+
+        if (!paused) {
+            camera.position.x += (cameraPosition.x - camera.position.x) / latency;
+            camera.position.y += (cameraPosition.y - camera.position.y) / latency;
+            camera.position.z += (cameraPosition.z - camera.position.z) / latency;
+        }
+
+        if (animating) {
+         
+            for (var i = len - 1; i >= 0; i --) {
+                item = media[i];
+                item.display.position.z += (item.position.z - item.display.position.z) / latency;
+            };
+
+            // if the last item is within range of its target, stop processing
+            animating = ((item.position.z - item.display.position.z) / 50) << 1;
+            console.log(animating);
+        }
+
+        updateDate(date.toFormat('DD-MMMM-YYYY'));
 
         // Render the scene
         renderer.render(scene, camera);
 
         // update stats
-        //stats.update();
+        stats.update();
     }
 
-    function dataLoadedHandler(data) {
+    function dataLoadedHandler(data) { 
         
         media = data;
+        firstDate = new Date(media[0].dates.taken); //potentially sketchy
 
         initThree();
         initItems();
 
         $three.on('mousewheel DOMMouseScroll', mouseWheelHandler);
         $three.on('mousemove', mouseMoveHandler);
-        $three.on('mousedown', mouseDownHandler);
+        //$three.on('mousedown', mouseDownHandler);
 
         $loader.on('load', mediaLoadHandler);
         $media.on('click', mediaClickHandler);
@@ -269,15 +259,7 @@ var scene = (function($, _, TweenLite, THREE, THREEx) {
 
     function initThree() {
 
-        if (Detector.webgl) {
-            renderer = new THREE.WebGLRenderer({
-                antialias: true,
-                // to get smoother output
-                preserveDrawingBuffer: true // to allow screenshot
-            });
-        } else {
-            renderer = new THREE.CanvasRenderer();
-        }
+        renderer = new THREE.CSS3DRenderer();
 
         stageWidth = window.innerWidth;
         stageHeight = window.innerHeight;
@@ -288,24 +270,22 @@ var scene = (function($, _, TweenLite, THREE, THREEx) {
         document.getElementById('three').appendChild(renderer.domElement);
 
         // add Stats.js - https://github.com/mrdoob/stats.js
-        /*
         stats = new Stats();
         stats.domElement.style.position = 'absolute';
-        stats.domElement.style.bottom = '0px';
+        stats.domElement.style.top = '0px';
         document.body.appendChild(stats.domElement);
-        */
-
+        
         // create a scene
         scene = new THREE.Scene();
 
         // put a camera in the scene
         camera = new THREE.PerspectiveCamera(fov, stageWidth / stageHeight, near, far);
-        camera.position.set(stageWidth / 2, stageHeight / 2, position.z);
+        camera.position.set(stageWidth / 2, stageHeight / 2, cameraPosition.z);
         scene.add(camera);
 
         projector = new THREE.Projector();
 
-        startz = position.z;
+        startz = cameraPosition.z;
 
         // create a camera contol
         // transparently support window resize
@@ -320,32 +300,38 @@ var scene = (function($, _, TweenLite, THREE, THREEx) {
 
     function initItems() {
 
+        var el, object, data, position;
+
+        var clickHelper = function(item) {
+            return function(e) { zoomToTag(item); };
+        };
+
         _.each(media, function(item, i) {
 
-            var canvas = getCanvas(item.title._content);
-            // var canvas = getCanvas(item.dates.taken);
-            var position = getPosition(new Date(item.dates.taken));
+            position = getPosition(new Date(item.dates.taken));
 
-            var texture = new THREE.Texture(canvas);
-            texture.needsUpdate = true;
+            // Mostly want these as $ right
+            el = document.createElement('div');
+            el.className = 'tag';
+            el.textContent = item.title._content;
 
-            var plane = new THREE.Mesh(
-                new THREE.PlaneGeometry(canvas.width, canvas.height),
-                new THREE.MeshBasicMaterial({
-                    map: texture,
-                    transparent: true,
-                    opacity: 1
-                })
-            );
+            object = new THREE.CSS3DObject(el);
+            object.position.x = position.x;
+            object.position.y = position.y;
+            object.position.z = position.z;
 
-            plane.geometry.dynamic = true;
+            data = { 
+                display: object, 
+                $el: $(el), 
+                data: item, 
+                position: {}
+            };
 
-            plane.position.x = position.x;
-            plane.position.y = position.y;
-            plane.position.z = position.z;
+            media[i] = data;
 
-            media[i] = ({ display: plane, data: item });
-            scene.add(plane);
+            el.onclick = clickHelper(data);
+
+            scene.add(object);
         });
     }
 
@@ -357,6 +343,7 @@ var scene = (function($, _, TweenLite, THREE, THREEx) {
             $.getJSON('http://localhost:1337/api/photos', dataLoadedHandler);
 
             $slider.on('input', sliderInputHandler);
+            $reverse.on('click', reverseClickHandler);
             $controls.mouseover(controlsMouseOverHandler);
         }
     };

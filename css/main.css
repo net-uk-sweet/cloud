@@ -1,5 +1,20 @@
 html, body { overflow: hidden; height: 100%; }
 
+		.tag {
+			cursor: pointer;
+		  font-size: 100px;
+		  font-family: 'Helvetica', sans-serif;
+		  text-shadow: 1px 1px 1px #000;
+		}
+
+		.tag:hover {
+			color: red;
+		}
+
+		.tag.selected {
+			color: green;
+		}
+
 body {
 	width: 100%;
 	padding: 0;
@@ -33,6 +48,10 @@ img { display: none; }
 
 #slider { 
 	width: 200px;
+}
+
+#button {
+	float: right;
 }
 
 #media {
