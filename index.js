@@ -54,10 +54,9 @@ app.get('/api', function (req, res) {
 	res.send('cloud RESTful API is running');
 });
 
-// TODO: have the same API end point and use POST / GET to distinguish
-// POST to retrieve the data from flickr and add to the db
-// GET to get it from the db
-// Could alias a shell command to call update API
+// TODO: prefer media for naming over data / photos
+
+// Can hit this in the browser to update DB
 app.get('/api/data', function(req, res) {
 
 	getPhotos(function(result) {
@@ -70,6 +69,19 @@ app.get('/api/data', function(req, res) {
 	});
 });
 
+// Retrieve media and update local DB on POST
+app.post('/api/photos', function (req, res) {
+	getPhotos(function(result) {
+		// Delete everything in the db
+		db.photos.remove({ });
+		// And replace it with the results
+		db.photos.insert(result); // TODO: is this asynch?? how do I know if it has failed?
+		// And let the user know
+		res.send('Updated database');
+	});
+});
+
+// Fetch media from local DB on GET
 app.get('/api/photos', function(req, res) {
     db.photos.find().toArray(function (err, photos) {
         res.json(photos);
