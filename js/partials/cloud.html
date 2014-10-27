@@ -1,0 +1,21 @@
+<header>
+    <h1 id="title" class="fade" ng-show="selected && opened">{{getTitle()}}</h1>
+    <h2 id="date">{{date}}</h2>
+</header>
+
+<sw-media id="media" class="fade" selected="selected" ng-show="selected && opened" loading="loading"
+    loaded="loaded" opened="opened" paused="paused" get-selected-image="getSelectedImage()"></sw-media>
+
+<!-- need to specify the scope variables we want to access as attributes -->
+<sw-cloud id="three" media="media" selected="selected" date="date" loading="loading" loaded="loaded"  
+    paused="paused" opened="opened" reversed="reversed" time-ratio="timeRatio" set-selected="setSelected">
+</sw-cloud>
+
+<div id="controls">
+    <input id="slider" type="range" min="200" max="8000" value="600" step="100" ng-model="timeRatio" />
+    <button id="reverse" ng-click="reverse()">Reverse</button>
+    <div>
+        <button ng-click="setIndex(index - 1)" ng-disabled="isPrevDisabled()">PREV</button>
+        <button ng-click="setIndex(index + 1)" ng-disabled="isNextDisabled()">NEXT</button>
+    </div>
+</div>

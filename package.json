@@ -18,6 +18,7 @@
   "dependencies": {
     "async": "~0.2.9",
     "express": "~3.4.6",
+    "flickrapi": "^0.3.26",
     "mongojs": "^0.13.0",
     "node-flickr": "0.0.1",
     "q": "~0.9.7",

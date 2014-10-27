@@ -5,6 +5,9 @@ var scene = (function($, _, TweenLite, THREE, THREEx) {
 
     /*
         TODO:
+            [ ] handling errors on my service
+            [ ] why does my API call fail sometimes?
+
             [ ] what's the difference between $observe and $watch?
             [ ] should my service be a Provider w/ config handled in config phase?
             [x] need more images

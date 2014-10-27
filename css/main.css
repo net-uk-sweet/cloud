@@ -1,22 +1,5 @@
 html, body { overflow: hidden; height: 100%; }
 
-
-.tag {
-	cursor: pointer;
-  font-size: 100px;
-  font-family: 'Helvetica', sans-serif;
-  text-shadow: 1px 1px 1px #000;
-}
-
-.tag:hover {
-	color: red;
-}
-
-.tag.selected {
-	color: green;
-}
-
-
 body {
 	width: 100%;
 	padding: 0;
@@ -27,14 +10,6 @@ body {
 	font-size	: 100%;
 }
 
-.loading {
-	color: #0000ff;
-}
-
-.loaded {
-	color: #00ff00;
-}
-
 h1, h2 { padding: 0 20px; text-shadow: 1px 1px 1px #000; }
 h1 { float: left; font-size: 2em; } 
 h2 { float: right; font-size: 1.5em; }
@@ -43,6 +18,25 @@ header, #three, #media { position: absolute; top: 0; }
 header { width: 100%; z-index: 3; pointer-events: none; }
 #three { z-index: 1; width: 100%; height: 100%; }
 img { display: none; }
+
+.tag {
+	cursor: pointer;
+	font-size: 100px;
+	font-family: 'Helvetica', sans-serif;
+	text-shadow: 1px 1px 1px #000;
+}
+
+.tag:hover {
+	color: red;
+}
+
+.tag.loading:after {
+	content: '-';
+}
+
+.tag.loaded:after {
+	content: '+';
+}
 
 #controls { 
 	position: absolute; 
@@ -74,23 +68,28 @@ img { display: none; }
 	-moz-background-size: cover;
 	-o-background-size: cover;
 	background-size: cover;
-	-webkit-transition: 2s linear all;
-	transition: 2s linear all;
-	opacity:1;
 	z-index: 2;
 }
 
-#media.ng-hide {
-  opacity: 0;
-  z-index: 0;
+.fade {
+	-webkit-transition: 2s linear all;
+	transition: 2s linear all;
+	opacity: 1;
 }
 
-#media.ng-hide-add, #media.ng-hide-remove {
+.fade.ng-hide {
+	opacity: 0;
+}
+
+.fade.ng-hide-add, .fade.ng-hide-remove {
   /* this needs to be here to make it visible during the animation
      since the .ng-hide class is already on the element rendering
      it as hidden. */
-  z-index: 2;
-  display: block !important;
+  	display: block !important;
+}
+
+#media.ng-hide-add, #media.ng-hide-remove {
+	z-index: 2;
 }
 
 .inactive { z-index: -1; }
