@@ -2,7 +2,7 @@
 angular.module('cloudApp')
 	.service('MediaService', MediaService);
 
-function MediaService($http) {
+function MediaService($http, $q) {
 
 	'use strict';
 
@@ -29,12 +29,12 @@ function MediaService($http) {
 	}
 
 	function handleError(response) {
-		debugger;
-		// return $q.reject(response.data.message);
-		return response.data.message;
+		return $q.reject(response.data);
 	}
 
 	function handleSuccess(response) {
-		return response.data;
+		// Even on success, server might have returned a load of rubbish
+		return typeof response.data === 'object' ? 
+			response.data : handleError(response);
 	}		
 }

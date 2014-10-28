@@ -33,18 +33,16 @@ function CloudCtrl($scope, MediaService) {
 	$scope.isNextDisabled = isNextDisabled;
 	$scope.getTitle = getTitle;
 
-	// Service returns a promise?
-	MediaService.getMedia().then(function(media) {
-		// $scope.media = media.splice(80, media.length);
-		$scope.media = media;
-	});
+	// Grab data to kick things off
+	MediaService.getMedia()
+		.then(function(media) {
+			// Got data, set the media property
+			$scope.media = media;
+		}, function(error) {
+			// No data, or bad data
+			console.log(error);
+		});
 	
-	/*
-	MediaService.updateMedia().then(function(result) {
-		console.log(result);
-	});
-	*/
-
 	function reverse() {
 		$scope.reversed = !$scope.reversed;
 	}
