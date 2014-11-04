@@ -2,10 +2,10 @@
 /*jshint node: true */
 
 var config = require('./config'),
-	data = require('./data'),
 	express = require('express'),
 	Flickr = require('flickrapi'), flickr,
 	_ = require('underscore'),
+	moment = require('moment'),
 	async = require('async'),
 	port = process.env.port || config.port,
 	app = express(),
@@ -43,10 +43,35 @@ function getPhotoData(photo, _callback) {
 
 function getPhotos(callback) {
 	flickr.photosets.getPhotos({ 'photoset_id': config.photoset }, function(err, results) {
+		// console.log('Got photos');
 		async.map(results.photoset.photo, getPhotoData, function(err, result) {
-			callback(result);
+			callback(err, result);
 		});
 	});
+}
+
+function getFlickr(callback) {
+	
+	var flickrConfig = { 
+		api_key: config.key, 
+		secret: config.secret 
+	};
+
+	Flickr.tokenOnly(flickrConfig, function(err, _flickr) {
+
+		console.log('Connected to flickr API');
+
+		// we can now use "flickr" as our API object,
+		// but we can only call public methods and access public data
+		flickr = _flickr;
+
+		// We don't need any data from this one
+		callback(err, null);
+	});
+}
+
+function formatDate(isoDate) {
+	return moment(isoDate).format('LLLL');
 }
 
 // REST services
@@ -54,33 +79,56 @@ app.get('/api', function (req, res) {
 	res.send('cloud RESTful API is running');
 });
 
+// Retrieve media and write to local DB on POST.
+// Media rather than photos in case we want to support video in the future.
+app.post('/api/media', function(req, res) {
 
-// Can hit this in the browser to update DB
-// Retrieve media and update local DB on POST
-app.get('/api/photos', function(req, res) {
+	// Need to authenticate with flickr and then get the photos
+	// TODO: we could have better error handling in this sequence
+	async.series([getFlickr, getPhotos], function(err, results) {
 
-	Flickr.tokenOnly({ api_key: config.key, secret: config.secret }, function(error, _flickr) {
+		if (!err) {
 
-		// we can now use "flickr" as our API object,
-		// but we can only call public methods and access public data
-		flickr = _flickr;
-		
-		getPhotos(function(result) {
-			// Delete everything in the db
-			db.photos.remove({ });
-			// And replace it with the results
-			db.photos.insert(result); // TODO: is this asynch?? how do I know if it has failed?
-			// And let the user know
-			res.send('Updated database');
-		});
+			// Replace everything in db with the results from the 2nd in the series 
+			// of async calls and a lastModfied date which we can reflect to the admin
+			db.media.remove({ });
+
+			db.media.insert({ 
+				lastUpdated: new Date(),
+				photos: results[1] 
+			});
+
+			// Let the user know
+			res.json('Updated database');
+		} else {
+			res.send(err);
+		}
 	});
 });
 
 // Fetch media from local DB on GET
-app.get('/api/photos', function(req, res) {
-    db.photos.find().toArray(function (err, photos) {
-        res.json(photos);
+app.get('/api/media', function(req, res) {
+    db.media.findOne(function(err, media) {
+        res.json(media.photos);
     });
+});
+
+// Fetch data for admin section from local DB
+app.get('/api/stats', function(req, res) {
+
+	db.media.findOne(function(err, media) {
+
+		var photos = media.photos,
+			lastUpdated = media.lastUpdated,
+			count = photos.length;
+
+		// TODO: bit of repetition in POST /api/media
+		res.json({
+			lastUpdated: formatDate(media.lastUpdated),
+			currentCount: count,
+			latestItem: photos[count - 1]
+		});
+	});
 });
 
 // Launch server

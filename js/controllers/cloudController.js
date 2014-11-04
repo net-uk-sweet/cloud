@@ -63,7 +63,7 @@ function CloudCtrl($scope, MediaService) {
 	}
 
 	function getTitle() {
-		return $scope.selected && $scope.selected.title._content || '';
+		return MediaService.getTitle($scope.selected);
 	}
 
 	function isPrevDisabled() {

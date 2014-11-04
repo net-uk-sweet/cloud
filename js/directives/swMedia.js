@@ -1,8 +1,8 @@
-/* globals angular */
+/* globals angular, _ */
 angular.module('cloudApp')
 	.directive('swMedia', swMedia);
 
-function swMedia() {
+function swMedia(MediaService) {
 
 	'use strict';
 
@@ -21,8 +21,7 @@ function swMedia() {
 			$scope.getSelectedImage = function(item) {
 
 				// Parse out the path to the large image from the available sizes
-				return _.findWhere(item.size, 
-					{ label: 'Large' }).source;
+				return MediaService.getImage(item, 'Large');
 			};
 		},
 

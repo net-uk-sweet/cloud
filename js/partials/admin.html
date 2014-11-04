@@ -1,2 +1,5 @@
-<p>{{status}}</p>
+<p>Last updated: {{lastUpdated}}</p>
+<p>Total images: {{currentCount}}</p>
+<p>Latest image: {{getTitle()}}</p>
+<img ng-src="{{getImage()}}" alt="" />
 <button ng-click="update()">Update Mongo</button>

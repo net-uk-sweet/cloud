@@ -1,19 +1,5 @@
 /* globals angular, TweenLite */
 
-/*
-    TODO:
-    	[ ] touch
-    	[ ] firefox
-    	[ ] find a nice spinner icon and matching open icon
-        [ ] what's the difference between $observe and $watch?
-        [ ] should my service be a Provider w/ config handled in config phase?
-        [ ] livereload on the go
-        [ ] update flickr library (project won't build from package.json)
-        [ ] mongodb in package.json? er. no also mongoose?
-        [ ] occasional fail in API call
-        [ ] image load indicator
-*/
-
 // Style guide suggests using functional rather than owner prefixes
 // for directive naming. 
 
@@ -77,7 +63,7 @@ function swCloud() {
 				if (date !== _date) {
 					_date = date;
 					$scope.$evalAsync(function() {
-						$scope.date = _date.toFormat('DD-MMMM-YYYY');
+						$scope.date = _date.format('DD-MMMM-YYYY');
 					});
 				}
 			};
@@ -133,7 +119,7 @@ function swCloud() {
 		    var fov = 30, near = 1, far = 1000;
 
 		    // General settings - should probably be in a JSON config
-		    var latency = 50, scrollSpeed = 20, offset = 2500;
+		    var latency = 50, scrollSpeed = 1000, offset = 2500;
 
 		    // Local state 
 		    var cameraPosition, targetPosition, 
@@ -165,8 +151,8 @@ function swCloud() {
 
 		        // todayDate to firstDate is our range of time which remains constant
 		        // startDate and endDate toggle between these values when the range is reversed
-		        startDate = todayDate = new Date('2014', '01', '28'); // TODO: this should probably be set higher up
-    			endDate = firstDate = new Date(scope.media[0].dates.taken); // potentially sketchy if order changes
+		        startDate = todayDate = moment('2014-10-28'); // TODO: this should probably be set higher up
+    			endDate = firstDate = moment(scope.media[0].dates.taken); // potentially sketchy if order changes
 
 		        targetPosition = { x: stageWidth / 2, y: stageWidth / 2, z: offset };
 
@@ -200,7 +186,7 @@ function swCloud() {
 					el = document.createElement('div');
 
 					// TODO: this would be more efficient if we used the same date object
-					date = new Date(item.dates.taken);
+					date = moment(item.dates.taken);
 					position = getPosition(date); 
 
 					display = new THREE.CSS3DObject(el);
@@ -226,16 +212,24 @@ function swCloud() {
 				});
 		    }
 
-			// Gets the position of an item in 3D space
 			function getPosition(date) {
 			    
-			    var dt = startDate.getSecondsBetween(date);
+			    var dt = getSecondsBetween(date, startDate);
 
 			    return {
 			        x: (Math.random() * stageWidth),
 			        y: (Math.random() * stageHeight),
 			        z: dt * (1 / scope.timeRatio)
 			    };
+			}
+
+			// TODO: Can add these to the moment prototyp with moment.fn.whatever
+			function getSecondsBetween(date_1, date_2) {
+				return ((date_1.clone().valueOf() - date_2.clone().valueOf()) / 1000) | 0;
+			}
+
+			function addSeconds(date, seconds) {
+				return date.clone().seconds(date.seconds() + seconds);
 			}
 
 		    function animate() {
@@ -270,7 +264,7 @@ function swCloud() {
 
 		        // Update the current date read out 
 		      	// TODO: this is probably costly in terms of performance
-		        scope.updateDate(startDate.clone().addSeconds(delta));
+		        scope.updateDate(addSeconds(startDate, delta));
 
 		        // Render the scene
 		        renderer.render(scene, camera);
@@ -304,7 +298,7 @@ function swCloud() {
 				animating = true;
 
 				angular.forEach(scope.media, function(item) {
-					item.position = getPosition(new Date(item.dates.taken));
+					item.position = getPosition(moment(item.dates.taken));
 				});
 			}
 
@@ -366,8 +360,26 @@ function swCloud() {
 			    targetPosition.y = e.clientY;
 			}
 
+		    // function mouseWheelHandler(e) {
+		    // 	targetPosition.z -= e.deltaY * scrollSpeed;
+		    // }
+
+			// http://stackoverflow.com/questions/5527601/normalizing-mousewheel-speed-across-browsers
 		    function mouseWheelHandler(e) {
-		    	targetPosition.z -= e.deltaY * scrollSpeed;
+
+				var d = e.detail, w = e.wheelDelta,
+				    n = 225, n1 = n-1, delta;
+
+				// console.log(e.detail, e.wheelDelta);
+
+				// Normalize delta
+				d = d ? w && (f = w/d) ? d/f : -d/1.35 : w/120;
+				// Quadratic scale if |d| > 1
+				d = d < 1 ? d < -1 ? (-Math.pow(d, 2) - n1) / n : d : (Math.pow(d, 2) + n1) / n;
+				// Delta *should* not be greater than 2...
+				delta = Math.min(Math.max(d / 2, -1), 1);	
+
+				targetPosition.z -= delta * scrollSpeed;	  	
 		    }
 		}
 	};    	
