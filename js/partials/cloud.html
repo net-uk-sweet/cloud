@@ -15,7 +15,10 @@
     <input id="slider" type="range" min="200" max="8000" value="600" step="100" ng-model="timeRatio" />
     <button id="reverse" ng-click="reverse()">Reverse</button>
     <div>
-        <button ng-click="setIndex(index - 1)" ng-disabled="isPrevDisabled()">PREV</button>
-        <button ng-click="setIndex(index + 1)" ng-disabled="isNextDisabled()">NEXT</button>
+        <!-- button ng-click="setIndex(index - 1)" ng-disabled="isPrevDisabled()">PREV</button>
+        <button ng-click="setIndex(index + 1)" ng-disabled="isNextDisabled()">NEXT</button -->
+
+        <button sw-auto-fire delta="-1">PREV</button>
+        <button ng-click="boing()" sw-auto-fire delta="1">NEXT</button>
     </div>
 </div>

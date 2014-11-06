@@ -10,7 +10,6 @@ function CloudCtrl($scope, MediaService) {
 	// Bindable properties
 	$scope.media = [];
 	$scope.selected = null;
-	$scope.index = -1; // index starts offset so we can page to first item
 
 	$scope.date = ''; // The date readout on the UI
 	$scope.timeRatio = 600; // Effecively the number of seconds represented by a pixel
@@ -27,10 +26,7 @@ function CloudCtrl($scope, MediaService) {
 	// -------------------------------------
 	// Bindable methods
 	$scope.setSelected = setSelected;
-	$scope.setIndex = setIndex;
 	$scope.reverse = reverse;
-	$scope.isPrevDisabled = isPrevDisabled;
-	$scope.isNextDisabled = isNextDisabled;
 	$scope.getTitle = getTitle;
 
 	// Grab data to kick things off
@@ -43,19 +39,16 @@ function CloudCtrl($scope, MediaService) {
 			console.log(error);
 		});
 	
+	$scope.boing = function() {
+		console.log('boing');
+	};
+
 	function reverse() {
 		$scope.reversed = !$scope.reversed;
 	}
 
-	function setIndex(index) {
-		
-		$scope.index = index;
-
-		if (!$scope.reversed) {
-			index = $scope.media.length - ($scope.index + 1);
-		}
-
-		setSelected($scope.media[index]);
+	function setDeltaZ(delta) {
+		$scope.deltaz = delta;
 	}
 
 	function setSelected(item) {
@@ -64,13 +57,5 @@ function CloudCtrl($scope, MediaService) {
 
 	function getTitle() {
 		return MediaService.getTitle($scope.selected);
-	}
-
-	function isPrevDisabled() {
-		return $scope.index <= 0;
-	}
-
-	function isNextDisabled() {
-		return $scope.index === $scope.media.length - 1;
 	}
 }

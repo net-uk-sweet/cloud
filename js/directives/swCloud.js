@@ -6,7 +6,7 @@
 angular.module('cloudApp')
 	.directive('swCloud', swCloud);
 
-function swCloud() {
+function swCloud($rootScope) {
 
 	'use strict';
 
@@ -119,7 +119,7 @@ function swCloud() {
 		    var fov = 30, near = 1, far = 1000;
 
 		    // General settings - should probably be in a JSON config
-		    var latency = 50, scrollSpeed = 1000, offset = 2500;
+		    var latency = 50, scrollSpeed = 3000, offset = 2500;
 
 		    // Local state 
 		    var cameraPosition, targetPosition, 
@@ -223,7 +223,7 @@ function swCloud() {
 			    };
 			}
 
-			// TODO: Can add these to the moment prototyp with moment.fn.whatever
+			// TODO: Can add these to the moment prototype with moment.fn.whatever
 			function getSecondsBetween(date_1, date_2) {
 				return ((date_1.clone().valueOf() - date_2.clone().valueOf()) / 1000) | 0;
 			}
@@ -347,6 +347,16 @@ function swCloud() {
 				}
 			});
 
+			scope.$watch('deltaz', function(newValue, oldValue) {
+				if (newValue !== oldValue) {
+					updateCameraZ(scope.deltaz);
+				}
+			});
+
+			$rootScope.$on('page', function(e, delta) {
+				updateCameraZ(delta);
+			});
+
 		    // Handlers
 
 		    function zoomCompleteHandler(e) {
@@ -379,7 +389,11 @@ function swCloud() {
 				// Delta *should* not be greater than 2...
 				delta = Math.min(Math.max(d / 2, -1), 1);	
 
-				targetPosition.z -= delta * scrollSpeed;	  	
+				updateCameraZ(delta);	  	
+		    }
+
+		    function updateCameraZ(delta) {
+		    	targetPosition.z -= delta * scrollSpeed;
 		    }
 		}
 	};    	
