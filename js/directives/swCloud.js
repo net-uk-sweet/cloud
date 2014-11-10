@@ -1,5 +1,3 @@
-/* globals angular, TweenLite */
-
 // Style guide suggests using functional rather than owner prefixes
 // for directive naming. 
 
@@ -151,7 +149,7 @@ function swCloud($rootScope) {
 
 		        // todayDate to firstDate is our range of time which remains constant
 		        // startDate and endDate toggle between these values when the range is reversed
-		        startDate = todayDate = moment('2014-10-28'); // TODO: this should probably be set higher up
+		        startDate = todayDate = moment();//moment('2014-10-28'); // TODO: this should probably be set higher up
     			endDate = firstDate = moment(scope.media[0].dates.taken); // potentially sketchy if order changes
 
 		        targetPosition = { x: stageWidth / 2, y: stageWidth / 2, z: offset };
@@ -239,13 +237,17 @@ function swCloud($rootScope) {
 
 		    function render() {
 
-				var delta = (cameraPosition.z - offset) * scope.timeRatio, 
-					item, z, len;
+				var delta, item, z, len;
 
-		        if (!scope.paused) {
+		        if (!scope.paused /*&& !animating */) {
 		            cameraPosition.x += (targetPosition.x - cameraPosition.x) / latency;
 		            cameraPosition.y += (targetPosition.y - cameraPosition.y) / latency;
 		            cameraPosition.z += (targetPosition.z - cameraPosition.z) / latency;
+		        
+		        	// delta = (cameraPosition.z - offset) * scope.timeRatio;
+
+			        // // Update the current date read out 
+			        // scope.updateDate(addSeconds(startDate, delta));
 		        }
 
 		        if (animating) {
@@ -259,11 +261,13 @@ function swCloud($rootScope) {
 		            }
 
 		            // if the last item is within range of its target, stop processing
-		            animating = ((item.position.z - item.display.position.z) / 50) << 1;
+		            //animating = ((item.position.z - item.display.position.z) / 10) << 1;
 		        }
 
-		        // Update the current date read out 
-		      	// TODO: this is probably costly in terms of performance
+
+	        	delta = (cameraPosition.z - offset) * scope.timeRatio;
+
+		        // // Update the current date read out 
 		        scope.updateDate(addSeconds(startDate, delta));
 
 		        // Render the scene
@@ -278,8 +282,7 @@ function swCloud($rootScope) {
 			    TweenLite.to(camera.position, 1, {
 			        z: item.display.position.z + offset,
 			        x: item.display.position.x,
-			        y: item.display.position.y,
-			        onComplete: zoomCompleteHandler
+			        y: item.display.position.y
 			    });
 			}
 
@@ -296,18 +299,26 @@ function swCloud($rootScope) {
 			function updatePositions() {
 
 				animating = true;
+				
+				// targetPosition.z = cameraPosition.z; // Kill any camera movement
 
 				angular.forEach(scope.media, function(item) {
 					item.position = getPosition(moment(item.dates.taken));
 				});
 			}
 
+		    function updateCameraZ(delta) {
+		    	targetPosition.z -= delta * scrollSpeed;
+		    }
+
 			function addClass(_class) {
 				angular.element(document.getElementById(scope.selected.id))
 					.addClass(_class);
 			}
 
+			// -----------------------------------------------------------------
 		    // Watches and listeners
+			// -----------------------------------------------------------------
 
 			// We only need this one the once, so we can unbind it on execution
 			var unbindMediaWatch = scope.$watch('media', function() {
@@ -342,14 +353,14 @@ function swCloud($rootScope) {
 			});
 
 			scope.$watch('timeRatio', function(newValue, oldValue) {
+				console.log('time ratio');
 				if (Math.abs(newValue) !== Math.abs(oldValue)) {
-					updatePositions();
-				}
-			});
+					// This should be the current position in seconds the camera is at or moving to
+					// Could probably do this sum more succinctly
+					var seconds = (targetPosition.z - offset) * oldValue;
+					targetPosition.z = offset + (seconds * (1 / newValue));
 
-			scope.$watch('deltaz', function(newValue, oldValue) {
-				if (newValue !== oldValue) {
-					updateCameraZ(scope.deltaz);
+					updatePositions();
 				}
 			});
 
@@ -357,32 +368,22 @@ function swCloud($rootScope) {
 				updateCameraZ(delta);
 			});
 
+			// -----------------------------------------------------------------
 		    // Handlers
-
-		    function zoomCompleteHandler(e) {
-		    	// Set off load on ngMedia directive
-		    	// Nice animation on load and then change visual state of tag
-		    	// On further click, launch media
-		    }
+			// -----------------------------------------------------------------
 
 			function mouseMoveHandler(e) {
 			    targetPosition.x = stageWidth - e.clientX;
 			    targetPosition.y = e.clientY;
 			}
 
-		    // function mouseWheelHandler(e) {
-		    // 	targetPosition.z -= e.deltaY * scrollSpeed;
-		    // }
-
-			// http://stackoverflow.com/questions/5527601/normalizing-mousewheel-speed-across-browsers
 		    function mouseWheelHandler(e) {
 
 				var d = e.detail, w = e.wheelDelta,
 				    n = 225, n1 = n-1, delta;
 
-				// console.log(e.detail, e.wheelDelta);
-
 				// Normalize delta
+				// http://stackoverflow.com/questions/5527601/normalizing-mousewheel-speed-across-browsers
 				d = d ? w && (f = w/d) ? d/f : -d/1.35 : w/120;
 				// Quadratic scale if |d| > 1
 				d = d < 1 ? d < -1 ? (-Math.pow(d, 2) - n1) / n : d : (Math.pow(d, 2) + n1) / n;
@@ -390,10 +391,6 @@ function swCloud($rootScope) {
 				delta = Math.min(Math.max(d / 2, -1), 1);	
 
 				updateCameraZ(delta);	  	
-		    }
-
-		    function updateCameraZ(delta) {
-		    	targetPosition.z -= delta * scrollSpeed;
 		    }
 		}
 	};    	

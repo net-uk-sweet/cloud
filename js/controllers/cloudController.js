@@ -1,8 +1,7 @@
-/* globals angular, _ */
 angular.module('cloudApp')
 	.controller('CloudCtrl', CloudCtrl);
 
-function CloudCtrl($scope, MediaService) {
+function CloudCtrl($scope, $rootScope, MediaService) {
 
 	'use strict';
 	
@@ -12,7 +11,7 @@ function CloudCtrl($scope, MediaService) {
 	$scope.selected = null;
 
 	$scope.date = ''; // The date readout on the UI
-	$scope.timeRatio = 600; // Effecively the number of seconds represented by a pixel
+	$scope.timeRatio = 600; // Effectively the number of seconds represented by a pixel
 
 	// Cloud state
 	$scope.paused = false;
@@ -28,6 +27,7 @@ function CloudCtrl($scope, MediaService) {
 	$scope.setSelected = setSelected;
 	$scope.reverse = reverse;
 	$scope.getTitle = getTitle;
+	$scope.page = page;
 
 	// Grab data to kick things off
 	MediaService.getMedia()
@@ -38,24 +38,22 @@ function CloudCtrl($scope, MediaService) {
 			// No data, or bad data
 			console.log(error);
 		});
-	
-	$scope.boing = function() {
-		console.log('boing');
-	};
-
-	function reverse() {
-		$scope.reversed = !$scope.reversed;
-	}
-
-	function setDeltaZ(delta) {
-		$scope.deltaz = delta;
-	}
 
 	function setSelected(item) {
 		$scope.selected = item;
 	}
+	
+	function reverse() {
+		$scope.reversed = !$scope.reversed;
+	}
 
 	function getTitle() {
 		return MediaService.getTitle($scope.selected);
+	}
+
+	function page(delta) {
+		// It's probably bad to use rootScope, but I couldn't come
+		// up with a cleaner alternative :(
+		$rootScope.$emit('page', delta);
 	}
 }

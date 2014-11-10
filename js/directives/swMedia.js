@@ -1,4 +1,3 @@
-/* globals angular, _ */
 angular.module('cloudApp')
 	.directive('swMedia', swMedia);
 
