@@ -24,7 +24,6 @@ function CloudCtrl($scope, $rootScope, MediaService) {
 
 	// -------------------------------------
 	// Bindable methods
-	$scope.setSelected = setSelected;
 	$scope.reverse = reverse;
 	$scope.getTitle = getTitle;
 	$scope.page = page;
@@ -38,10 +37,6 @@ function CloudCtrl($scope, $rootScope, MediaService) {
 			// No data, or bad data
 			console.log(error);
 		});
-
-	function setSelected(item) {
-		$scope.selected = item;
-	}
 	
 	function reverse() {
 		$scope.reversed = !$scope.reversed;

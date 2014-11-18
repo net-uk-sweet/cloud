@@ -84,7 +84,7 @@ function swCloud($rootScope) {
 					if (item === $scope.selected && $scope.loaded) {
 						$scope.opened = true;
 					} else {
-			    		$scope.setSelected()(item);
+			    		$scope.selected = item;
 					}
 				});
 			};
@@ -123,7 +123,7 @@ function swCloud($rootScope) {
 		    var cameraPosition, targetPosition, 
 		    	todayDate, startDate, 
 		    	firstDate, endDate,
-		    	animating; 
+		    	timeRatio, animating; 
 
 		    // Width and height on controller?
 			var stageWidth, stageHeight;
@@ -146,6 +146,8 @@ function swCloud($rootScope) {
 
 		        stageWidth = elem[0].offsetWidth;
 		        stageHeight = elem[0].offsetHeight;
+
+		        timeRatio = scope.timeRatio;
 
 		        // todayDate to firstDate is our range of time which remains constant
 		        // startDate and endDate toggle between these values when the range is reversed
@@ -217,7 +219,7 @@ function swCloud($rootScope) {
 			    return {
 			        x: (Math.random() * stageWidth),
 			        y: (Math.random() * stageHeight),
-			        z: dt * (1 / scope.timeRatio)
+			        z: dt * (1 / timeRatio)
 			    };
 			}
 
@@ -237,17 +239,12 @@ function swCloud($rootScope) {
 
 		    function render() {
 
-				var delta, item, z, len;
+				var delta, item, z, len, home = [];
 
-		        if (!scope.paused /*&& !animating */) {
+		        if (!scope.paused) {
 		            cameraPosition.x += (targetPosition.x - cameraPosition.x) / latency;
 		            cameraPosition.y += (targetPosition.y - cameraPosition.y) / latency;
 		            cameraPosition.z += (targetPosition.z - cameraPosition.z) / latency;
-		        
-		        	// delta = (cameraPosition.z - offset) * scope.timeRatio;
-
-			        // // Update the current date read out 
-			        // scope.updateDate(addSeconds(startDate, delta));
 		        }
 
 		        if (animating) {
@@ -258,31 +255,47 @@ function swCloud($rootScope) {
 		                item = scope.media[i];
 		            	z = (item.position.z - item.display.position.z) / latency;
 		                item.display.position.z += z;
+		                home[i] = !Boolean(((item.position.z - item.display.position.z) / 50) << 1);
 		            }
 
 		            // if the last item is within range of its target, stop processing
-		            //animating = ((item.position.z - item.display.position.z) / 10) << 1;
+		            animating = home.indexOf(false) > -1;
+		            // console.log('Animating', animating);
+
+		            if (!animating) {
+		            	setDisabled(false);
+		            }
+
+		        } else {
+			        // // Update the current date read out
+			        // Don't want this happening when we're animating or it goes crazy
+		        	delta = (cameraPosition.z - offset) * timeRatio; 
+		        	// console.log('updating date');
+			        scope.updateDate(addSeconds(startDate, delta));
 		        }
-
-
-	        	delta = (cameraPosition.z - offset) * scope.timeRatio;
-
-		        // // Update the current date read out 
-		        scope.updateDate(addSeconds(startDate, delta));
 
 		        // Render the scene
 		        renderer.render(scene, camera);
+		    }
+
+		    function getLastItem() {
+		    	return scope.reversed ? 
+		    		scope.media[0] : 
+		    		scope.media[scope.media.length - 1];
 		    }
 
 			function zoomTo(item) {
 
 			    scope.paused = true;
 
+			    fadeOut();
+
 			    TweenLite.killTweensOf(cameraPosition);
 			    TweenLite.to(camera.position, 1, {
 			        z: item.display.position.z + offset,
 			        x: item.display.position.x,
-			        y: item.display.position.y
+			        y: item.display.position.y,
+			        onComplete: zoomCompleteHandler
 			    });
 			}
 
@@ -291,7 +304,7 @@ function swCloud($rootScope) {
 				startDate = scope.reversed ? firstDate : todayDate;
 				endDate = scope.reversed ? todayDate : firstDate;
 
-				scope.timeRatio *= -1;
+				timeRatio *= -1;
 
 				updatePositions();
 			}
@@ -299,21 +312,53 @@ function swCloud($rootScope) {
 			function updatePositions() {
 
 				animating = true;
+				// scope.paused = false;
 				
-				// targetPosition.z = cameraPosition.z; // Kill any camera movement
+				setDisabled(true);
+
+				scope.selected = null;
 
 				angular.forEach(scope.media, function(item) {
 					item.position = getPosition(moment(item.dates.taken));
 				});
 			}
 
+			function setDisabled(disabled) {
+				getAll().toggleClass('disabled', disabled);
+			}
+
 		    function updateCameraZ(delta) {
+				
+		    	if (scope.paused) {
+		    		fadeIn();
+		    	}
+
+				scope.paused = false;
+				scope.selected = null;
+
 		    	targetPosition.z -= delta * scrollSpeed;
 		    }
 
 			function addClass(_class) {
-				angular.element(document.getElementById(scope.selected.id))
-					.addClass(_class);
+				getSelected().addClass(_class);
+			}
+
+			function fadeIn() {
+				getAll().removeClass('fade');
+			}
+
+			function fadeOut() {
+				getAll().addClass('fade');
+		    	getSelected().removeClass('fade');
+			}
+
+			// jqLite wrapped versions of stuff we need
+			function getSelected() {
+				return angular.element(document.getElementById(scope.selected.id));
+			}
+
+			function getAll() {
+				return angular.element(document.querySelectorAll('.tag'));
 			}
 
 			// -----------------------------------------------------------------
@@ -352,13 +397,22 @@ function swCloud($rootScope) {
 				}
 			});
 
+			scope.$watch('paused', function(newValue, oldValue) {
+				if (!newValue && newValue !== oldValue) {
+					fadeIn();
+				}
+			});
+
 			scope.$watch('timeRatio', function(newValue, oldValue) {
-				console.log('time ratio');
-				if (Math.abs(newValue) !== Math.abs(oldValue)) {
+				// console.log('time ratio');
+				if (newValue !== oldValue) {
+
 					// This should be the current position in seconds the camera is at or moving to
 					// Could probably do this sum more succinctly
 					var seconds = (targetPosition.z - offset) * oldValue;
 					targetPosition.z = offset + (seconds * (1 / newValue));
+
+					timeRatio = scope.reversed ? newValue * -1 : newValue;
 
 					updatePositions();
 				}
@@ -367,6 +421,7 @@ function swCloud($rootScope) {
 			$rootScope.$on('page', function(e, delta) {
 				updateCameraZ(delta);
 			});
+
 
 			// -----------------------------------------------------------------
 		    // Handlers
@@ -391,6 +446,10 @@ function swCloud($rootScope) {
 				delta = Math.min(Math.max(d / 2, -1), 1);	
 
 				updateCameraZ(delta);	  	
+		    }
+
+		    function zoomCompleteHandler() {
+		   		//fadeOut();
 		    }
 		}
 	};    	

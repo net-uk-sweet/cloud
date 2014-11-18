@@ -23,6 +23,9 @@ header { width: 100%; z-index: 3; pointer-events: none; }
 	font-size: 100px;
 	font-family: 'Helvetica', sans-serif;
 	text-shadow: 1px 1px 1px #000;
+	/*-webkit-transition: 2s linear opacity;
+	transition: 2s linear opacity;*/
+	opacity: 1;
 }
 
 .tag:hover {
@@ -35,6 +38,15 @@ header { width: 100%; z-index: 3; pointer-events: none; }
 
 .tag.loaded:after {
 	content: '+';
+}
+
+.tag.disabled {
+	cursor: default;
+	color: #0000ff;
+}
+
+.tag.fade {
+	opacity: 0.25;	
 }
 
 #controls { 
