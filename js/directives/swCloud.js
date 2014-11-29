@@ -30,6 +30,7 @@ function swCloud($rootScope) {
 
 		restrict: 'E', // AEC - attribute, element, comment
 		scope: { // This gives us an isolate scope
+			'debug': '=',
 			'media': '=',
 			'selected': '=',
 			'date': '=',
@@ -37,6 +38,7 @@ function swCloud($rootScope) {
 			'loaded': '=',
 			'opened': '=',
 			'paused': '=',
+			'animating': '=',
 			'reversed': '=',
 			'timeRatio': '=',
 			'setSelected': '&' // Pattern for using the same / similar name which avoids shadowing? 
@@ -90,12 +92,16 @@ function swCloud($rootScope) {
 			};
 
 			$scope.isLoading = function(item) {
-				return $scope.loading && $scope.selected === item;
+				return $scope.loading && isSelected(item);
 			};
 
 			$scope.isLoaded = function(item) {
-				return $scope.loaded && $scope.selected === item;
+				return $scope.loaded && isSelected(item);
 			};
+
+			function isSelected(item) {
+				return $scope.selected === item;
+			}
 		},
 		
 		link: function(scope, elem, attr) {
@@ -123,7 +129,7 @@ function swCloud($rootScope) {
 		    var cameraPosition, targetPosition, 
 		    	todayDate, startDate, 
 		    	firstDate, endDate,
-		    	timeRatio, animating; 
+		    	timeRatio; 
 
 		    // Width and height on controller?
 			var stageWidth, stageHeight;
@@ -131,6 +137,8 @@ function swCloud($rootScope) {
 
 			// Directive starting point
 		    function init() {
+
+		    	// console.log("Init");
 
 		    	initScene();
 		    	initItems();
@@ -146,8 +154,6 @@ function swCloud($rootScope) {
 
 		        stageWidth = elem[0].offsetWidth;
 		        stageHeight = elem[0].offsetHeight;
-
-		        timeRatio = scope.timeRatio;
 
 		        // todayDate to firstDate is our range of time which remains constant
 		        // startDate and endDate toggle between these values when the range is reversed
@@ -187,7 +193,7 @@ function swCloud($rootScope) {
 
 					// TODO: this would be more efficient if we used the same date object
 					date = moment(item.dates.taken);
-					position = getPosition(date); 
+					position = getPosition(date);
 
 					display = new THREE.CSS3DObject(el);
 					display.position.x = position.x;
@@ -195,12 +201,12 @@ function swCloud($rootScope) {
 					display.position.z = position.z;
 
 					item.display = display;
-					item.position = {}; 
+					item.position = position; 
 					item.date = date;
 
 					el.id = item.id;
 					el.className = 'tag';
-					el.textContent = item.title._content;
+					el.textContent = scope.debug ? item.dates.taken : item.title._content;
 
 					el.addEventListener('click', function(item) {
 						return function() { 
@@ -213,13 +219,14 @@ function swCloud($rootScope) {
 		    }
 
 			function getPosition(date) {
-			    
+
 			    var dt = getSecondsBetween(date, startDate);
+			    // console.log(dt * timeRatio);
 
 			    return {
-			        x: (Math.random() * stageWidth),
-			        y: (Math.random() * stageHeight),
-			        z: dt * (1 / timeRatio)
+			    	x: Math.random() * stageWidth,
+			    	y: Math.random() * stageHeight,
+			    	z: dt * timeRatio
 			    };
 			}
 
@@ -239,7 +246,7 @@ function swCloud($rootScope) {
 
 		    function render() {
 
-				var delta, item, z, len, home = [];
+				var delta, item, z, len, home;
 
 		        if (!scope.paused) {
 		            cameraPosition.x += (targetPosition.x - cameraPosition.x) / latency;
@@ -247,41 +254,40 @@ function swCloud($rootScope) {
 		            cameraPosition.z += (targetPosition.z - cameraPosition.z) / latency;
 		        }
 
-		        if (animating) {
+		        if (scope.animating && !scope.paused) {
 
 		         	len = scope.media.length;
-		            
+		            home = true;
+
 		            for (var i = len - 1; i >= 0; i --) {
+
 		                item = scope.media[i];
 		            	z = (item.position.z - item.display.position.z) / latency;
 		                item.display.position.z += z;
-		                home[i] = !Boolean(((item.position.z - item.display.position.z) / 50) << 1);
+
+		                // If any item is more than a pixel away from its target, 
+		                // we're not finished animating yet.
+		                if ((Math.abs((item.position.z - item.display.position.z)) << 1)) {
+		                	home = false;
+						}
 		            }
 
-		            // if the last item is within range of its target, stop processing
-		            animating = home.indexOf(false) > -1;
-		            // console.log('Animating', animating);
+		            scope.animating = !home;
+		            setDisabled(scope.animating);
 
-		            if (!animating) {
-		            	setDisabled(false);
-		            }
+		        } 
 
-		        } else {
+		        // if (!(scope.animating || scope.paused)) {
+		        if (!scope.animating) {
 			        // // Update the current date read out
 			        // Don't want this happening when we're animating or it goes crazy
-		        	delta = (cameraPosition.z - offset) * timeRatio; 
-		        	// console.log('updating date');
+		        	delta = (cameraPosition.z - offset) / timeRatio; 
+		        	if (scope.reversed) delta *= -1;
 			        scope.updateDate(addSeconds(startDate, delta));
 		        }
 
 		        // Render the scene
 		        renderer.render(scene, camera);
-		    }
-
-		    function getLastItem() {
-		    	return scope.reversed ? 
-		    		scope.media[0] : 
-		    		scope.media[scope.media.length - 1];
 		    }
 
 			function zoomTo(item) {
@@ -299,32 +305,42 @@ function swCloud($rootScope) {
 			    });
 			}
 
-			function reverse() {
+			function startAnimating() {
 
-				startDate = scope.reversed ? firstDate : todayDate;
-				endDate = scope.reversed ? todayDate : firstDate;
+				scope.animating = true;
 
-				timeRatio *= -1;
-
-				updatePositions();
-			}
-
-			function updatePositions() {
-
-				animating = true;
-				// scope.paused = false;
-				
-				setDisabled(true);
-
+				scope.paused = false;
 				scope.selected = null;
 
+				setDisabled(true);
+			}
+
+			function reversePositions() {
+
+				// The total range in seconds adjusted by our ratio
+				var dt = getSecondsBetween(todayDate, firstDate) * Math.abs(timeRatio) * -1;
+
+				startAnimating();
+
 				angular.forEach(scope.media, function(item) {
-					item.position = getPosition(moment(item.dates.taken));
+					item.position.z = dt - item.position.z;
+				});
+			}
+
+			function updatePositions(oldTimeRatio) {
+
+				startAnimating();
+
+				angular.forEach(scope.media, function(item) {
+					item.position.z = (item.position.z / oldTimeRatio) * timeRatio;
 				});
 			}
 
 			function setDisabled(disabled) {
-				getAll().toggleClass('disabled', disabled);
+
+				// if (!scope.debug) {
+				// 	getAll().toggleClass('disabled', disabled);
+				// }
 			}
 
 		    function updateCameraZ(delta) {
@@ -340,7 +356,12 @@ function swCloud($rootScope) {
 		    }
 
 			function addClass(_class) {
-				getSelected().addClass(_class);
+
+				var selected = getSelected();
+
+				if (selected) {
+					getSelected().addClass(_class);
+				}
 			}
 
 			function fadeIn() {
@@ -348,11 +369,15 @@ function swCloud($rootScope) {
 			}
 
 			function fadeOut() {
+				
 				getAll().addClass('fade');
-		    	getSelected().removeClass('fade');
+		    	
+		    	if (scope.selected) {
+		    		getSelected().removeClass('fade');
+		    	}
 			}
 
-			// jqLite wrapped versions of stuff we need
+			// jqLite wrapped versions of elements we need
 			function getSelected() {
 				return angular.element(document.getElementById(scope.selected.id));
 			}
@@ -367,7 +392,7 @@ function swCloud($rootScope) {
 
 			// We only need this one the once, so we can unbind it on execution
 			var unbindMediaWatch = scope.$watch('media', function() {
-				if (scope.media.length) {
+				if (scope.media.length) { 
 					init();
 					unbindMediaWatch();
 				}
@@ -391,30 +416,39 @@ function swCloud($rootScope) {
 				}
 			});
 
-			scope.$watch('reversed', function(newValue, oldValue) {
-				if (newValue !== oldValue) {
-					reverse(newValue);
-				}
-			});
-
 			scope.$watch('paused', function(newValue, oldValue) {
 				if (!newValue && newValue !== oldValue) {
 					fadeIn();
 				}
 			});
 
-			scope.$watch('timeRatio', function(newValue, oldValue) {
-				// console.log('time ratio');
+			scope.$watch('reversed', function(newValue, oldValue) {
+				
 				if (newValue !== oldValue) {
 
-					// This should be the current position in seconds the camera is at or moving to
-					// Could probably do this sum more succinctly
-					var seconds = (targetPosition.z - offset) * oldValue;
-					targetPosition.z = offset + (seconds * (1 / newValue));
+					// Flip the start and end dates for the read out
+					startDate = scope.reversed ? firstDate : todayDate;
+					endDate = scope.reversed ? todayDate : firstDate;
 
-					timeRatio = scope.reversed ? newValue * -1 : newValue;
+					// And invert the z position of each item
+					reversePositions();
+				}
+			});
 
-					updatePositions();
+			scope.$watch('timeRatio', function(newValue, oldValue) {
+
+				var oldTimeRatio = timeRatio;
+
+				// Convert from a manageable whole number ie. 600
+				// To a usable float, ie. 0.0016666666666666668
+				timeRatio = 1 / newValue;
+
+				// console.log(timeRatio);
+
+				if (newValue !== oldValue) {
+					// convert existing target camera position z according to new value
+					targetPosition.z = offset + ((targetPosition.z - offset) / oldTimeRatio) * timeRatio;
+					updatePositions(oldTimeRatio);
 				}
 			});
 
@@ -445,11 +479,15 @@ function swCloud($rootScope) {
 				// Delta *should* not be greater than 2...
 				delta = Math.min(Math.max(d / 2, -1), 1);	
 
-				updateCameraZ(delta);	  	
+				scope.$apply(function() { 
+					updateCameraZ(delta);
+				});	  	
 		    }
 
 		    function zoomCompleteHandler() {
-		   		//fadeOut();
+
+		   		var date = moment(scope.selected.dates.taken);
+		   		scope.updateDate(date);
 		    }
 		}
 	};    	

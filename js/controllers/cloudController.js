@@ -6,15 +6,20 @@ function CloudCtrl($scope, $rootScope, MediaService) {
 	'use strict';
 	
 	// ------------------------------------
+
 	// Bindable properties
+	$scope.debug = false;
+
 	$scope.media = [];
 	$scope.selected = null;
-
 	$scope.date = ''; // The date readout on the UI
-	$scope.timeRatio = 600; // Effectively the number of seconds represented by a pixel
+
+	// 1 / timeRatio is the number of seconds represented by a pixel
+	$scope.timeRatio = 4100; 
 
 	// Cloud state
 	$scope.paused = false;
+	$scope.animating = false;
 	$scope.reversed = false; 
 
 	// Media directive state
@@ -23,6 +28,7 @@ function CloudCtrl($scope, $rootScope, MediaService) {
 	$scope.opened = false;
 
 	// -------------------------------------
+
 	// Bindable methods
 	$scope.reverse = reverse;
 	$scope.getTitle = getTitle;

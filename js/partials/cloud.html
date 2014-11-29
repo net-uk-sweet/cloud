@@ -1,18 +1,19 @@
 <header>
     <h1 id="title" class="fade" ng-show="selected && opened">{{getTitle()}}</h1>
-    <h2 id="date">{{date}}</h2>
+    <h2 id="date" class="fade" ng-class="{'semi-hide': animating && !selected}">{{date}}</h2>
 </header>
 
 <sw-media id="media" class="fade" selected="selected" ng-show="selected && opened" loading="loading"
     loaded="loaded" opened="opened" paused="paused" get-selected-image="getSelectedImage()"></sw-media>
 
 <!-- need to specify the scope variables we want to access as attributes -->
-<sw-cloud id="three" media="media" selected="selected" date="date" loading="loading" loaded="loaded"  
-    paused="paused" opened="opened" reversed="reversed" time-ratio="timeRatio" set-selected="setSelected">
+<sw-cloud id="three" debug="debug" media="media" selected="selected" date="date" loading="loading" 
+    loaded="loaded" paused="paused" animating="animating" opened="opened" reversed="reversed" 
+    time-ratio="timeRatio" set-selected="setSelected">
 </sw-cloud>
 
 <div id="controls">
-    <input id="slider" type="range" min="200" max="8000" value="600" step="100" ng-model="timeRatio" />
+    <input id="slider" type="range" min="200" max="8000" value="timeRatio" step="100" ng-model="timeRatio" />
     <button id="reverse" ng-click="reverse()">Reverse</button>
     <div>
         <button ng-click="page(-1)" sw-auto-fire min-speed="10" max-speed="20" steps="20">PREV</button>

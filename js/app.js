@@ -4,7 +4,6 @@ angular.module('cloudApp', ['ngRoute', 'ngAnimate'])
 /*
     TODO:
     	[ ] CSS states - careful of too many CSS transitions
-    	[x] stop date going ape-shit when time ratio is changed
     	[ ] build to wrap each file in IFFE
     	[ ] controller as syntax and this in controller ($scope as a special case for $on, $emit etc)
     	[ ] basic access control

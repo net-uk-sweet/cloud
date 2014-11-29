@@ -22,14 +22,15 @@ header { width: 100%; z-index: 3; pointer-events: none; }
 	cursor: pointer;
 	font-size: 100px;
 	font-family: 'Helvetica', sans-serif;
-	text-shadow: 1px 1px 1px #000;
+	/*text-shadow: 1px 1px 1px #000;*/
+	color: #ffffff;
 	/*-webkit-transition: 2s linear opacity;
 	transition: 2s linear opacity;*/
 	opacity: 1;
 }
 
 .tag:hover {
-	color: red;
+	color: #ffffff;
 }
 
 .tag.loading:after {
@@ -46,7 +47,7 @@ header { width: 100%; z-index: 3; pointer-events: none; }
 }
 
 .tag.fade {
-	opacity: 0.25;	
+	opacity: 0.2;	
 }
 
 #controls { 
@@ -92,6 +93,12 @@ header { width: 100%; z-index: 3; pointer-events: none; }
 	opacity: 0;
 }
 
+.semi-hide { 
+	opacity: 0.25;
+}
+
+.test { color: blue; }
+
 .fade.ng-hide-add, .fade.ng-hide-remove {
   /* this needs to be here to make it visible during the animation
      since the .ng-hide class is already on the element rendering
@@ -103,9 +110,5 @@ header { width: 100%; z-index: 3; pointer-events: none; }
 	z-index: 2;
 }
 
-.inactive { z-index: -1; }
+.inactive { z-index: 3; }
 .active { z-index: 2; }
-
-.rotate-0 { -webkit-transform: rotate(0deg); }
-.rotate-90 { -webkit-transform: rotate(90deg); }
-.rotate-270 { -webkit-transform: rotate(270deg); }
