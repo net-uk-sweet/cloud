@@ -25,7 +25,7 @@ function CloudCtrl($scope, $rootScope, MediaService) {
 	// Media directive state
 	$scope.loading = false;
 	$scope.loaded = false;
-	$scope.opened = false;
+	$scope.zoomed = false;
 
 	// -------------------------------------
 

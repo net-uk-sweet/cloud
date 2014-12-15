@@ -5,72 +5,21 @@ body {
 	padding: 0;
 	margin: 0;
 	color: #fff;
-	background-color: #000;
-	font-family	: arial;
-	font-size	: 100%;
+	background-color: #2E2F2F;
+	font-family: arial;
+	font-size: 100%;
+	box-sizing: border-box;
 }
 
 h1, h2 { padding: 0 20px; text-shadow: 1px 1px 1px #000; }
 h1 { float: left; font-size: 2em; } 
 h2 { float: right; font-size: 1.5em; }
 
-header, #three, #media { position: absolute; top: 0; }
-header { width: 100%; z-index: 3; pointer-events: none; }
-#three { z-index: 1; width: 100%; height: 100%; }
+header, .three, .media { position: absolute; top: 0; }
+header { width: 100%; z-index: 4; pointer-events: none; }
+.three { z-index: 1; width: 100%; height: 100%; }
 
-.tag {
-	cursor: pointer;
-	font-size: 100px;
-	font-family: 'Helvetica', sans-serif;
-	/*text-shadow: 1px 1px 1px #000;*/
-	color: #ffffff;
-	/*-webkit-transition: 2s linear opacity;
-	transition: 2s linear opacity;*/
-	opacity: 1;
-}
-
-.tag:hover {
-	color: #ffffff;
-}
-
-.tag.loading:after {
-	content: '-';
-}
-
-.tag.loaded:after {
-	content: '+';
-}
-
-.tag.disabled {
-	cursor: default;
-	color: #0000ff;
-}
-
-.tag.fade {
-	opacity: 0.2;	
-}
-
-#controls { 
-	position: absolute; 
-	bottom: 0; 
-	width: 100%; 
-	z-index: 4; 
-	/*pointer-events: none;*/ 
-	background-color: #000;
-	opacity: 0.5;
-	padding: 20px;
-	border: 1px solid white;
-}
-
-#slider { 
-	width: 200px;
-}
-
-#button {
-	float: right;
-}
-
-#media {
+.media {
 	width: 100%;
 	height: 100%;
 	background-repeat: no-repeat;
@@ -80,24 +29,86 @@ header { width: 100%; z-index: 3; pointer-events: none; }
 	-moz-background-size: cover;
 	-o-background-size: cover;
 	background-size: cover;
-	z-index: 2;
+	z-index: 3;
 }
 
+.tag {
+	cursor: pointer;
+	font-size: 100px;
+	font-family: 'Helvetica', sans-serif;
+	/*text-shadow: 1px 1px 1px #000;*/
+	color: #ffffff;
+	white-space: nowrap;
+}
+
+.tag.loading::before {
+	position: absolute;
+	overflow: hidden;
+	width: 0;
+	color: #eb8921;
+	content: attr(data-content);
+	opacity: 0;
+	-webkit-transition: 0.5s linear opacity;
+	transition: 0.5s linear opacity;
+}
+
+.tag.visited {
+	color: #eb8921;
+}
+
+.tag:hover, .tag.selected {
+	opacity: #cbcbcb;
+}
+
+.tag:hover, .tag.selected {
+	color: #cbcbcb;
+}
+
+.tag.visited:hover, .tag.visited.selected {
+	color: #BC7325;
+}
+
+.tag.fade {
+	opacity: 0.2;	
+}
+
+.controls { 
+	position: absolute; 
+	bottom: 0; 
+	width: 100%; 
+	z-index: 2; 
+	background-color: rgba(0, 0, 0, 0);
+	/*border-top: 1px solid #808080;*/
+}
+
+.slider { 
+	width: 200px;
+}
+
+.button {
+	background: none;
+	font-size: 50px;
+	color: #ffffff;
+	cursor: pointer;
+	border: none;	
+}
+
+.left { float: left; padding: 8px 0 0 10px; }
+.right { float: right; padding: 8px 10px 0 0; }
+
+.button:focus { outline: none; }
+.button:hover { opacity: 0.5; }
+
+.disabled { pointer-events: none; }
+
 .fade {
-	-webkit-transition: 2s linear all;
-	transition: 2s linear all;
+	-webkit-transition: 0.5s linear opacity;
+	transition: 0.5s linear opacity;
 	opacity: 1;
 }
 
-.fade.ng-hide {
-	opacity: 0;
-}
-
-.semi-hide { 
-	opacity: 0.25;
-}
-
-.test { color: blue; }
+.fade.ng-hide { opacity: 0; }
+.semi-hide { opacity: 0.25; }
 
 .fade.ng-hide-add, .fade.ng-hide-remove {
   /* this needs to be here to make it visible during the animation
@@ -105,10 +116,3 @@ header { width: 100%; z-index: 3; pointer-events: none; }
      it as hidden. */
   	display: block !important;
 }
-
-#media.ng-hide-add, #media.ng-hide-remove {
-	z-index: 2;
-}
-
-.inactive { z-index: 3; }
-.active { z-index: 2; }

@@ -40,7 +40,8 @@ function MediaService($http, $q) {
 
 	// A utility function to avoid repeating the retrieval of images across controllers
 	function getImage(item, size) {
-		return item && _.findWhere(item.size, { label: size }).source;
+		var proxy = 'http://localhost:1337/api/proxy/?url=';
+		return item && proxy + _.findWhere(item.size, { label: size }).source;
 	}
 
 	// A utility function to avoid repeating the retrieval of the title across controllers

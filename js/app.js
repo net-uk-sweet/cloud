@@ -3,11 +3,12 @@ angular.module('cloudApp', ['ngRoute', 'ngAnimate'])
 
 /*
     TODO:
-    	[ ] CSS states - careful of too many CSS transitions
-    	[ ] build to wrap each file in IFFE
+    	[ ] check in and merge down
+    	[ ] still not centred
+    	[ ] tidy up files - iconic.css, js/app.js
+    	[ ] slider styling or zoom functionality
     	[ ] controller as syntax and this in controller ($scope as a special case for $on, $emit etc)
     	[ ] basic access control
-    	[ ] find a nice spinner icon and matching open icon
         [ ] what's the difference between $observe and $watch?
         [ ] directive on github?
         [ ] should my service be a Provider w/ config handled in config phase?

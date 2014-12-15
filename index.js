@@ -9,7 +9,8 @@ var config = require('./config'),
 	async = require('async'),
 	port = process.env.port || config.port,
 	app = express(),
-	db = require('./db');
+	db = require('./db'),
+	request = require('request');
 
 app.use(express.json());
 app.use(express.static(__dirname));
@@ -104,6 +105,14 @@ app.post('/api/media', function(req, res) {
 			res.send(err);
 		}
 	});
+});
+
+app.get('/api/proxy', function(req, res) {
+	// res.send('hello' + req.query.url);
+	request.get(req.query.url, function(response) {
+		console.log('proxy error', response);
+		res.send(response);
+	}).pipe(res);
 });
 
 // Fetch media from local DB on GET

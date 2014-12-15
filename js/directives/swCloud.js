@@ -4,7 +4,7 @@
 angular.module('cloudApp')
 	.directive('swCloud', swCloud);
 
-function swCloud($rootScope) {
+function swCloud($rootScope, $timeout) {
 
 	'use strict';
 
@@ -36,7 +36,7 @@ function swCloud($rootScope) {
 			'date': '=',
 			'loading': '=',
 			'loaded': '=',
-			'opened': '=',
+			'zoomed': '=',
 			'paused': '=',
 			'animating': '=',
 			'reversed': '=',
@@ -83,11 +83,7 @@ function swCloud($rootScope) {
 				// $scope.itemSelected()(item);
 
 				$scope.$apply(function() {
-					if (item === $scope.selected && $scope.loaded) {
-						$scope.opened = true;
-					} else {
-			    		$scope.selected = item;
-					}
+			    	$scope.selected = item;
 				});
 			};
 
@@ -123,7 +119,10 @@ function swCloud($rootScope) {
 		    var fov = 30, near = 1, far = 1000;
 
 		    // General settings - should probably be in a JSON config
-		    var latency = 50, scrollSpeed = 3000, offset = 2500;
+		    var latency = 50, 
+		    	scrollSpeed = 3000, 
+		    	offsetz = 2500, 
+		    	offsety = 76; // height of the controls at the bottom
 
 		    // Local state 
 		    var cameraPosition, targetPosition, 
@@ -133,6 +132,7 @@ function swCloud($rootScope) {
 
 		    // Width and height on controller?
 			var stageWidth, stageHeight;
+
 			var media;
 
 			// Directive starting point
@@ -145,8 +145,8 @@ function swCloud($rootScope) {
 		    	animate();
 
 		    	// Remember elem is already jqLite wrapped
-		    	elem.on('mousemove', mouseMoveHandler);
-		    	elem.on('mousewheel DOMMouseScroll', mouseWheelHandler);
+		    	angular.element(document).on('mousemove', mouseMoveHandler);
+		    	angular.element(document).on('mousewheel DOMMouseScroll', mouseWheelHandler);
 		    }
 
 		    // Initialise three scene
@@ -157,10 +157,15 @@ function swCloud($rootScope) {
 
 		        // todayDate to firstDate is our range of time which remains constant
 		        // startDate and endDate toggle between these values when the range is reversed
-		        startDate = todayDate = moment();//moment('2014-10-28'); // TODO: this should probably be set higher up
-    			endDate = firstDate = moment(scope.media[0].dates.taken); // potentially sketchy if order changes
+		        startDate = todayDate = moment();
+		        // potentially sketchy if order changes
+    			endDate = firstDate = moment(scope.media[0].dates.taken); 
 
-		        targetPosition = { x: stageWidth / 2, y: stageWidth / 2, z: offset };
+		        targetPosition = { 
+		        	x: stageWidth / 2, 
+		        	y: (stageHeight + offsety) / 2,
+		        	z: offsetz
+		        };
 
 		      	renderer = new THREE.CSS3DRenderer();
 		        renderer.setSize(stageWidth, stageHeight);
@@ -207,6 +212,7 @@ function swCloud($rootScope) {
 					el.id = item.id;
 					el.className = 'tag';
 					el.textContent = scope.debug ? item.dates.taken : item.title._content;
+					el.setAttribute('data-content', el.textContent);
 
 					el.addEventListener('click', function(item) {
 						return function() { 
@@ -273,15 +279,13 @@ function swCloud($rootScope) {
 		            }
 
 		            scope.animating = !home;
-		            setDisabled(scope.animating);
-
 		        } 
 
 		        // if (!(scope.animating || scope.paused)) {
 		        if (!scope.animating) {
 			        // // Update the current date read out
 			        // Don't want this happening when we're animating or it goes crazy
-		        	delta = (cameraPosition.z - offset) / timeRatio; 
+		        	delta = (cameraPosition.z - offsetz) / timeRatio; 
 		        	if (scope.reversed) delta *= -1;
 			        scope.updateDate(addSeconds(startDate, delta));
 		        }
@@ -294,11 +298,9 @@ function swCloud($rootScope) {
 
 			    scope.paused = true;
 
-			    fadeOut();
-
 			    TweenLite.killTweensOf(cameraPosition);
 			    TweenLite.to(camera.position, 1, {
-			        z: item.display.position.z + offset,
+			        z: item.display.position.z + offsetz,
 			        x: item.display.position.x,
 			        y: item.display.position.y,
 			        onComplete: zoomCompleteHandler
@@ -311,8 +313,6 @@ function swCloud($rootScope) {
 
 				scope.paused = false;
 				scope.selected = null;
-
-				setDisabled(true);
 			}
 
 			function reversePositions() {
@@ -336,21 +336,7 @@ function swCloud($rootScope) {
 				});
 			}
 
-			function setDisabled(disabled) {
-
-				// if (!scope.debug) {
-				// 	getAll().toggleClass('disabled', disabled);
-				// }
-			}
-
 		    function updateCameraZ(delta) {
-				
-		    	if (scope.paused) {
-		    		fadeIn();
-		    	}
-
-				scope.paused = false;
-				scope.selected = null;
 
 		    	targetPosition.z -= delta * scrollSpeed;
 		    }
@@ -360,20 +346,29 @@ function swCloud($rootScope) {
 				var selected = getSelected();
 
 				if (selected) {
-					getSelected().addClass(_class);
+					selected.addClass(_class);
+				}
+			}
+
+			function removeClass(_class) {
+
+				var selected = getSelected();
+
+				if (selected) {
+					selected.removeClass(_class);
 				}
 			}
 
 			function fadeIn() {
-				getAll().removeClass('fade');
+				getAll().removeClass('fade disabled');
 			}
 
 			function fadeOut() {
 				
-				getAll().addClass('fade');
+				getAll().addClass('fade disabled');
 		    	
 		    	if (scope.selected) {
-		    		getSelected().removeClass('fade');
+		    		getSelected().removeClass('fade disabled');
 		    	}
 			}
 
@@ -400,19 +395,15 @@ function swCloud($rootScope) {
 
 			scope.$watch('selected', function(newValue, oldValue) {
 				if (newValue && newValue !== oldValue) {
+					addClass('selected');
 					zoomTo(newValue);
 				}
 			});
 
 			scope.$watch('loading', function(newValue, oldValue) {
 				if (newValue && newValue !== oldValue) {
+					// console.log('Adding class loading to:', getSelected());
 					addClass('loading');
-				}
-			});
-
-			scope.$watch('loaded', function(newValue, oldValue) {
-				if (newValue && newValue !== oldValue) {
-					addClass('loaded');
 				}
 			});
 
@@ -435,6 +426,17 @@ function swCloud($rootScope) {
 				}
 			});
 
+			// Switch classes on selected when zoomed is false ..
+			// Naming ain't fantastic, but that's the point at which image window is closed
+			scope.$watch('zoomed', function(newValue, oldValue) {
+
+				if (!newValue && newValue !== oldValue) {
+					removeClass('selected');
+					removeClass('loading');
+					addClass('visited');
+				}
+			});
+
 			scope.$watch('timeRatio', function(newValue, oldValue) {
 
 				var oldTimeRatio = timeRatio;
@@ -447,7 +449,7 @@ function swCloud($rootScope) {
 
 				if (newValue !== oldValue) {
 					// convert existing target camera position z according to new value
-					targetPosition.z = offset + ((targetPosition.z - offset) / oldTimeRatio) * timeRatio;
+					targetPosition.z = offsetz + ((targetPosition.z - offsetz) / oldTimeRatio) * timeRatio;
 					updatePositions(oldTimeRatio);
 				}
 			});
@@ -462,8 +464,12 @@ function swCloud($rootScope) {
 			// -----------------------------------------------------------------
 
 			function mouseMoveHandler(e) {
-			    targetPosition.x = stageWidth - e.clientX;
-			    targetPosition.y = e.clientY;
+
+				var y = e.clientY,
+					inBounds = y < (stageHeight - offsety);
+			    
+			    targetPosition.x = inBounds ? stageWidth - e.clientX : stageWidth / 2;
+			    targetPosition.y = inBounds ? y : stageHeight / 2;
 			}
 
 		    function mouseWheelHandler(e) {
@@ -488,6 +494,12 @@ function swCloud($rootScope) {
 
 		   		var date = moment(scope.selected.dates.taken);
 		   		scope.updateDate(date);
+
+		   		fadeOut();
+
+		   		$timeout(function() {
+		   			scope.zoomed = true; 
+		   		}, 2000);
 		    }
 		}
 	};    	

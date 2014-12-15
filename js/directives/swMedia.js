@@ -1,7 +1,7 @@
 angular.module('cloudApp')
 	.directive('swMedia', swMedia);
 
-function swMedia(MediaService) {
+function swMedia($timeout, MediaService, ImageService) {
 
 	'use strict';
 
@@ -11,7 +11,7 @@ function swMedia(MediaService) {
 			selected: '=',
 			loading: '=',
 			loaded: '=',
-			opened: '=',
+			zoomed: '=',
 			paused: '='
 		},
 
@@ -20,7 +20,7 @@ function swMedia(MediaService) {
 			$scope.getSelectedImage = function(item) {
 
 				// Parse out the path to the large image from the available sizes
-				return MediaService.getImage(item, 'Large');
+				return MediaService.getImage($scope.selected, 'Large');
 			};
 		},
 
@@ -33,40 +33,61 @@ function swMedia(MediaService) {
 				'MSTransitionEnd'
 			].join(' ');
 
-			var image = new Image();
-			var src;
+			var loadingSelector = '.tag.loading:before',
+				image = new Image(),
+				src;
 
-			scope.$watch('selected', function(newValue, oldValue) {
+			scope.$watch('zoomed', function(newValue, oldValue) {
+
 				if (newValue && newValue !== oldValue) {
-					src = scope.getSelectedImage(newValue);
-					if (src !== image.src) {
-						scope.loaded = false;
-						scope.loading = true;
-						image.src = scope.getSelectedImage(newValue); 
-					} else {
-						scope.loaded = true;
-					}
+					
+					src = scope.getSelectedImage(/*newValue*/);
+
+					// scope.loaded = false;
+					scope.loading = true;
+
+					// Clear up all the rules jss has created
+					jss.remove();
+
+					ImageService.load(src, imageProgressHandler).then(imageLoadedHandler);
 				}
 			}); 
 
+			function setProgress(percent) {
+				jss.set(loadingSelector, { 'width': percent + '%', opacity: '1' });	
+			}
+
+			function imageProgressHandler(progress) {
+
+				console.log('swMedia.imageProgressHandler(): ', progress);
+
+				setProgress(progress * 100);
+			}
+
 			function imageLoadedHandler(e) {
-				// Need to use apply, otherwise ng doesn't know this happened
-				scope.$apply(function() {
+
+				$timeout(function() {
+
 					scope.loaded = true;
 					scope.loading = false;
-				});
-				elem.css('background-image', 'url(' + image.src + ')');
+
+					image.src = e;
+					elem.css('background-image', 'url(' + image.src + ')');
+
+				}, 1000);
 			}
 
 			function clickHandler(e) {
 				scope.$apply(function() {
-					scope.opened = false;
+					scope.zoomed = false;
+					scope.loaded = false;
 				});
 			}
 
 			function transitionCompleteHandler(e) {
 
-				if (!scope.opened) {
+				// Faded out on close
+				if (!scope.zoomed) {
 					scope.$apply(function() {
 						scope.paused = false;
 						scope.selected = null;
@@ -74,8 +95,8 @@ function swMedia(MediaService) {
 				}
 			}
 
-			image.addEventListener('load', imageLoadedHandler);
-			image.addEventListener('error', imageLoadedHandler);
+			// image.addEventListener('load', imageLoadedHandler);
+			// image.addEventListener('error', imageLoadedHandler);
 
 			elem.on('click', clickHandler);
 			elem.on(transitionEvents, transitionCompleteHandler);
