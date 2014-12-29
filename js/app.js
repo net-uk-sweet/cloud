@@ -3,10 +3,9 @@ angular.module('cloudApp', ['ngRoute', 'ngAnimate'])
 
 /*
     TODO:
-    	[ ] check in and merge down
-    	[ ] still not centred
-    	[ ] tidy up files - iconic.css, js/app.js
-    	[ ] slider styling or zoom functionality
+    	[ ] hide items within offset / or thereabouts
+    	[ ] tweak the UI
+    	[ ] merge down
     	[ ] controller as syntax and this in controller ($scope as a special case for $on, $emit etc)
     	[ ] basic access control
         [ ] what's the difference between $observe and $watch?

@@ -4,7 +4,7 @@
 angular.module('cloudApp')
 	.directive('swCloud', swCloud);
 
-function swCloud($rootScope, $timeout) {
+function swCloud($rootScope, $timeout, $window) {
 
 	'use strict';
 
@@ -121,14 +121,13 @@ function swCloud($rootScope, $timeout) {
 		    // General settings - should probably be in a JSON config
 		    var latency = 50, 
 		    	scrollSpeed = 3000, 
-		    	offsetz = 2500, 
-		    	offsety = 76; // height of the controls at the bottom
+		    	offsetz = 2500;
 
 		    // Local state 
 		    var cameraPosition, targetPosition, 
 		    	todayDate, startDate, 
 		    	firstDate, endDate,
-		    	timeRatio; 
+		    	timeRatio, mouseOver; 
 
 		    // Width and height on controller?
 			var stageWidth, stageHeight;
@@ -140,20 +139,26 @@ function swCloud($rootScope, $timeout) {
 
 		    	// console.log("Init");
 
+		    	var windae = angular.element($window);
+
 		    	initScene();
 		    	initItems();
 		    	animate();
 
 		    	// Remember elem is already jqLite wrapped
-		    	angular.element(document).on('mousemove', mouseMoveHandler);
-		    	angular.element(document).on('mousewheel DOMMouseScroll', mouseWheelHandler);
+		    	elem.bind('mouseover', mouseOverHandler);
+		    	elem.bind('mouseout', mouseOutHandler);
+		    	elem.bind('mousemove', mouseMoveHandler);
+
+		    	windae.bind('mousewheel DOMMouseScroll', mouseWheelHandler);
+		    	windae.bind('resize', resizeHandler);
 		    }
 
 		    // Initialise three scene
 		    function initScene() {
 
-		        stageWidth = elem[0].offsetWidth;
-		        stageHeight = elem[0].offsetHeight;
+		    	// Set screen width and height
+		    	resizeHandler();
 
 		        // todayDate to firstDate is our range of time which remains constant
 		        // startDate and endDate toggle between these values when the range is reversed
@@ -163,7 +168,7 @@ function swCloud($rootScope, $timeout) {
 
 		        targetPosition = { 
 		        	x: stageWidth / 2, 
-		        	y: (stageHeight + offsety) / 2,
+		        	y: stageHeight / 2,
 		        	z: offsetz
 		        };
 
@@ -205,10 +210,6 @@ function swCloud($rootScope, $timeout) {
 					display.position.y = position.y;
 					display.position.z = position.z;
 
-					item.display = display;
-					item.position = position; 
-					item.date = date;
-
 					el.id = item.id;
 					el.className = 'tag';
 					el.textContent = scope.debug ? item.dates.taken : item.title._content;
@@ -220,6 +221,11 @@ function swCloud($rootScope, $timeout) {
 						};
 					}(item));
     
+					item.display = display;
+					item.el = el;
+					item.position = position; 
+					item.date = date;
+
 					scene.add(display);
 				});
 		    }
@@ -337,8 +343,12 @@ function swCloud($rootScope, $timeout) {
 			}
 
 		    function updateCameraZ(delta) {
-
 		    	targetPosition.z -= delta * scrollSpeed;
+		    }
+
+		    function resetCamera() {
+		    	targetPosition.x = stageWidth / 2;
+		    	targetPosition.y = stageHeight / 2;
 		    }
 
 			function addClass(_class) {
@@ -463,13 +473,23 @@ function swCloud($rootScope, $timeout) {
 		    // Handlers
 			// -----------------------------------------------------------------
 
+			function mouseOverHandler(e) {
+				mouseOver = true;
+			}
+
+			function mouseOutHandler(e) {
+				mouseOver = true;
+				resetCamera();
+			}
+
 			function mouseMoveHandler(e) {
 
-				var y = e.clientY,
-					inBounds = y < (stageHeight - offsety);
-			    
-			    targetPosition.x = inBounds ? stageWidth - e.clientX : stageWidth / 2;
-			    targetPosition.y = inBounds ? y : stageHeight / 2;
+				if (mouseOver) {
+				    targetPosition.x = stageWidth - e.clientX;
+				    targetPosition.y = e.clientY;
+				    console.log(targetPosition.x, stageWidth / 2);
+				    console.log(targetPosition.y, stageHeight / 2);
+				}
 			}
 
 		    function mouseWheelHandler(e) {
@@ -488,6 +508,11 @@ function swCloud($rootScope, $timeout) {
 				scope.$apply(function() { 
 					updateCameraZ(delta);
 				});	  	
+		    }
+
+		    function resizeHandler(e) {
+		        stageWidth = elem[0].offsetWidth;
+		        stageHeight = elem[0].offsetHeight;
 		    }
 
 		    function zoomCompleteHandler() {

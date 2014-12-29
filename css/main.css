@@ -87,25 +87,30 @@ header { width: 100%; z-index: 4; pointer-events: none; }
 
 .button {
 	background: none;
-	font-size: 50px;
+	font-size: 30px;
 	color: #ffffff;
 	cursor: pointer;
 	border: none;	
+	text-decoration: none;
 }
-
+/*
+.icon-backward-circled, .icon-forward-circled { font-size: 40px; }
+*/
 .left { float: left; padding: 8px 0 0 10px; }
 .right { float: right; padding: 8px 10px 0 0; }
 
 .button:focus { outline: none; }
 .button:hover { opacity: 0.5; }
 
-.disabled { pointer-events: none; }
+.disabled { pointer-events: none; opacity: 0.5; }
 
 .fade {
 	-webkit-transition: 0.5s linear opacity;
 	transition: 0.5s linear opacity;
 	opacity: 1;
 }
+
+.hide { opacity: 0; }
 
 .fade.ng-hide { opacity: 0; }
 .semi-hide { opacity: 0.25; }
