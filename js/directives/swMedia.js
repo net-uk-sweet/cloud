@@ -59,7 +59,7 @@ function swMedia($timeout, MediaService, ImageService) {
 
 			function imageProgressHandler(progress) {
 
-				console.log('swMedia.imageProgressHandler(): ', progress);
+				// console.log('swMedia.imageProgressHandler(): ', progress);
 
 				setProgress(progress * 100);
 			}
@@ -94,9 +94,6 @@ function swMedia($timeout, MediaService, ImageService) {
 					});
 				}
 			}
-
-			// image.addEventListener('load', imageLoadedHandler);
-			// image.addEventListener('error', imageLoadedHandler);
 
 			elem.on('click', clickHandler);
 			elem.on(transitionEvents, transitionCompleteHandler);

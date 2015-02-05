@@ -68,21 +68,12 @@ header { width: 100%; z-index: 4; pointer-events: none; }
 	color: #BC7325;
 }
 
-.tag.fade {
-	opacity: 0.2;	
-}
-
 .controls { 
 	position: absolute; 
 	bottom: 0; 
 	width: 100%; 
 	z-index: 2; 
 	background-color: rgba(0, 0, 0, 0);
-	/*border-top: 1px solid #808080;*/
-}
-
-.slider { 
-	width: 200px;
 }
 
 .button {
@@ -93,24 +84,21 @@ header { width: 100%; z-index: 4; pointer-events: none; }
 	border: none;	
 	text-decoration: none;
 }
-/*
-.icon-backward-circled, .icon-forward-circled { font-size: 40px; }
-*/
+
 .left { float: left; padding: 8px 0 0 10px; }
 .right { float: right; padding: 8px 10px 0 0; }
 
 .button:focus { outline: none; }
 .button:hover { opacity: 0.5; }
 
-.disabled { pointer-events: none; opacity: 0.5; }
+.disabled { pointer-events: none; opacity: 0.25; }
 
 .fade {
 	-webkit-transition: 0.5s linear opacity;
 	transition: 0.5s linear opacity;
-	opacity: 1;
 }
 
-.hide { opacity: 0; }
+/*.hide { opacity: 0; }*/
 
 .fade.ng-hide { opacity: 0; }
 .semi-hide { opacity: 0.25; }

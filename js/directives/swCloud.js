@@ -211,7 +211,7 @@ function swCloud($rootScope, $timeout, $window) {
 					display.position.z = position.z;
 
 					el.id = item.id;
-					el.className = 'tag';
+					el.className = 'tag fade';
 					el.textContent = scope.debug ? item.dates.taken : item.title._content;
 					el.setAttribute('data-content', el.textContent);
 
@@ -222,7 +222,7 @@ function swCloud($rootScope, $timeout, $window) {
 					}(item));
     
 					item.display = display;
-					item.el = el;
+					// item.el = el;
 					item.position = position; 
 					item.date = date;
 
@@ -369,16 +369,16 @@ function swCloud($rootScope, $timeout, $window) {
 				}
 			}
 
-			function fadeIn() {
-				getAll().removeClass('fade disabled');
+			function enable() {
+				getAll().removeClass('disabled');
 			}
 
-			function fadeOut() {
-				
-				getAll().addClass('fade disabled');
+			function disable() {
+
+				getAll().addClass('disabled');
 		    	
 		    	if (scope.selected) {
-		    		getSelected().removeClass('fade disabled');
+		    		getSelected().removeClass('disabled');
 		    	}
 			}
 
@@ -419,7 +419,7 @@ function swCloud($rootScope, $timeout, $window) {
 
 			scope.$watch('paused', function(newValue, oldValue) {
 				if (!newValue && newValue !== oldValue) {
-					fadeIn();
+					enable();
 				}
 			});
 
@@ -487,8 +487,6 @@ function swCloud($rootScope, $timeout, $window) {
 				if (mouseOver) {
 				    targetPosition.x = stageWidth - e.clientX;
 				    targetPosition.y = e.clientY;
-				    console.log(targetPosition.x, stageWidth / 2);
-				    console.log(targetPosition.y, stageHeight / 2);
 				}
 			}
 
@@ -520,12 +518,69 @@ function swCloud($rootScope, $timeout, $window) {
 		   		var date = moment(scope.selected.dates.taken);
 		   		scope.updateDate(date);
 
-		   		fadeOut();
+		   		disable();
 
 		   		$timeout(function() {
 		   			scope.zoomed = true; 
 		   		}, 2000);
 		    }
+
+
+		// v. nice, but expensive version of the render function which
+		// fades elements out when they get within a certain range 
+		// of the camera.
+		// Not sure if it could be optimised to perform better. 
+		// Also, doesn't work currently with zoom in and out functionality.
+	    function _render() {
+
+				var delta, item, z, len, home;
+
+		        if (!scope.paused) {
+
+		         	len = scope.media.length;
+
+		            cameraPosition.x += (targetPosition.x - cameraPosition.x) / latency;
+		            cameraPosition.y += (targetPosition.y - cameraPosition.y) / latency;
+		            cameraPosition.z += (targetPosition.z - cameraPosition.z) / latency;
+
+		            for (var i = len - 1; i >= 0; i --) {
+
+		                item = scope.media[i];
+
+		                angular.element(item.el).toggleClass('hide', 
+		                	cameraPosition.z - item.position.z < 500);
+
+		                // if (cameraPosition.z - item.position.z < 500
+
+		                if (scope.animating) {
+
+		                	home = true;
+
+			            	z = (item.position.z - item.display.position.z) / latency;
+			                item.display.position.z += z;
+
+			                // If any item is more than a pixel away from its target, 
+			                // we're not finished animating yet.
+			                if ((Math.abs((item.position.z - item.display.position.z)) << 1)) {
+			                	home = false;
+							}
+						}
+		            }
+
+		            scope.animating = !home;
+		        }
+
+		        if (!scope.animating) {
+			        // // Update the current date read out
+			        // Don't want this happening when we're animating or it goes crazy
+		        	delta = (cameraPosition.z - offsetz) / timeRatio; 
+		        	if (scope.reversed) delta *= -1;
+			        scope.updateDate(addSeconds(startDate, delta));
+		        }
+
+		        // Render the scene
+		        renderer.render(scene, camera);
+		    }		
 		}
 	};    	
 }
