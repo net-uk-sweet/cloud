@@ -1,6 +1,6 @@
 {
   "name": "cloud",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "A 3d representation of my flickr feed",
   "main": "index.js",
   "scripts": {
@@ -23,5 +23,11 @@
     "mongojs": "^0.13.0",
     "q": "~0.9.7",
     "underscore": "~1.5.2"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-concat": "^0.5.1",
+    "grunt-contrib-cssmin": "^0.12.2",
+    "grunt-contrib-uglify": "^0.8.0"
   }
 }
