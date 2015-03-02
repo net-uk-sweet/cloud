@@ -48,14 +48,24 @@ module.exports = function(grunt) {
 				]
 			}
 		},
-		ng_template: {
-			files: ['js/partials'],
-			options: {
-				appDir: 'dist',
-				indexFile: 'index.html',
-				concat: true
-			}
-		},
+		// TODO: this one doesn't minify!
+		inline_angular_templates: {
+	        dist: {
+	            options: {
+					selector: 'body',      
+	                method: 'prepend',     
+	                unescape: {            
+	                    '&lt;': '<',
+	                    '&gt;': '>',
+	                    '&apos;': '\'',
+	                    '&amp;': '&'
+	                }
+	            },
+	            files: {
+	                'dist/index.html': ['js/partials/*.html']
+	            }
+	        }
+    	},
 		injector: {
 			options: {},
 			localDependencies: {
@@ -72,7 +82,8 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-uglify');
 	grunt.loadNpmTasks('grunt-contrib-cssmin');
 	grunt.loadNpmTasks('grunt-contrib-copy');
-	grunt.loadNpmTasks('grunt-ng-template');
+	// grunt.loadNpmTasks('grunt-ng-template');
+	grunt.loadNpmTasks('grunt-inline-angular-templates');
 	grunt.loadNpmTasks('grunt-injector');
 
 	// Configure our tasks
@@ -82,7 +93,8 @@ module.exports = function(grunt) {
 		'uglify', 
 		'cssmin', 
 		'copy', 
-		'ng_template',
+		// 'ng_template',
+		'inline_angular_templates',
 		'injector'
 	]);
 };
