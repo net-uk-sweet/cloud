@@ -1,4 +1,4 @@
-angular.module('cloudApp')
+angular.module('app')
 	.directive('swAutoFire', swAutoFire);
 
 function swAutoFire($timeout) {

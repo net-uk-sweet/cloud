@@ -1,7 +1,7 @@
 // Style guide suggests using functional rather than owner prefixes
 // for directive naming. 
 
-angular.module('cloudApp')
+angular.module('app')
 	.directive('swCloud', swCloud);
 
 function swCloud($rootScope, $timeout, $window) {

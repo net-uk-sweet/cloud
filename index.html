@@ -1,17 +1,19 @@
 <!doctype html>
-<html ng-app="cloudApp">
+<html ng-app="app">
     <head>
-        <title>learningthree.js boiler plate for three.js</title>
+        <title>Cloud</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 
         <!-- injector:css -->
         <link href="css/main.css" rel="stylesheet"/>
         <link href="css/fontello.css" rel="stylesheet"/>
+
+        <!-- this should probably be injected in rather than injected out! Outjected?? -->
+        <script>document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>')</script>
+
         <!-- endinjector -->
 
-        <!-- live reload -->
-        <script>document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>')</script>
     </head>
     <body ng-view>
     
@@ -34,7 +36,7 @@
         <script src="js/libs/three.js/CSS3DRenderer.js"></script>
         <script src="js/libs/three.js/THREEx.WindowResize.js"></script>
 
-        <!-- app - todo: should really have separated into an app directory -->
+        <!-- app - todo: should really have this lot separated into an app directory -->
         <script src="js/app.js"></script>
         <script src="js/services/mediaService.js"></script>
         <script src="js/services/imageService.js"></script>

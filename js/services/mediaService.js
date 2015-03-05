@@ -1,4 +1,4 @@
-angular.module('cloudApp')
+angular.module('app')
 	.service('MediaService', MediaService);
 
 function MediaService($http, $q) {
@@ -40,7 +40,7 @@ function MediaService($http, $q) {
 
 	// A utility function to avoid repeating the retrieval of images across controllers
 	function getImage(item, size) {
-		var proxy = 'http://localhost:1337/api/proxy/?url=';
+		var proxy = 'api/proxy/?url=';
 		return item && proxy + _.findWhere(item.size, { label: size }).source;
 	}
 

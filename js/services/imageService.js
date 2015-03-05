@@ -1,4 +1,4 @@
-angular.module('cloudApp')
+angular.module('app')
 	.service('ImageService', ImageService);
 
 function ImageService($http, $q) {
