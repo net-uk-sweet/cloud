@@ -29,7 +29,7 @@ function swAutoFire($timeout) {
 					
 					elem.triggerHandler(event);
 
-					step = (step == steps) ? steps : step + 1;
+					step = (step === steps) ? steps : step + 1;
 				
 					frameDuration = 1000 / (maxSpeed - 
 						(Math.cos((step / steps) * 
