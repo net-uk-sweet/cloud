@@ -1,4 +1,4 @@
-angular.module('app', ['ngRoute', 'ngAnimate'])
+angular.module('cloudApp', ['ngRoute', 'ngAnimate'])
 	.config(['$routeProvider', RouteConfig]);
 
 /*

@@ -1,4 +1,4 @@
-angular.module('app')
+angular.module('cloudApp')
 	.controller('AdminCtrl', AdminCtrl);
 
 function AdminCtrl($scope, MediaService) {

@@ -1,4 +1,4 @@
-angular.module('app')
+angular.module('cloudApp')
 	.service('MediaService', MediaService);
 
 function MediaService($http, $q) {

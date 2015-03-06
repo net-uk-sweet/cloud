@@ -5,13 +5,15 @@ module.exports = function(grunt) {
 
 		pkg: grunt.file.readJSON('package.json'),
 
-		// Specific configs for our tasks 
 
 		ngtemplates: {
 			app: {
 				src: 'js/partials/**.html',
 				dest: 'js/partials/templates.js',
 				options: {
+					bootstrap: function(module, script) {
+						return "angular.module('cloudApp').run(['$templateCache', function($templateCache) {\n"+script+"\n}]);\n";
+					},
 					htmlmin: { collapseWhitespace: true, collapseBooleanAttributes: true }
 				}
 			}

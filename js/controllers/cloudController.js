@@ -1,4 +1,4 @@
-angular.module('app')
+angular.module('cloudApp')
 	.controller('CloudCtrl', CloudCtrl);
 
 function CloudCtrl($scope, $rootScope, MediaService) {

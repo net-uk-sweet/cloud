@@ -1,4 +1,4 @@
-angular.module('app')
+angular.module('cloudApp')
 	.directive('swMedia', swMedia);
 
 function swMedia($timeout, MediaService, ImageService) {
