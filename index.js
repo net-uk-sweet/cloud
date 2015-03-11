@@ -7,7 +7,8 @@ var config = require('./config'),
 	_ = require('underscore'),
 	moment = require('moment'),
 	async = require('async'),
-	port = process.env.port || config.port,
+	port = process.env.OPENSHIFT_NODEJS_PORT || config.port,
+	ip = process.env.OPENSHIFT_NODEJS_IP || config.ip,
 	app = express(),
 	db = require('./db'),
 	request = require('request');
@@ -141,5 +142,5 @@ app.get('/api/stats', function(req, res) {
 });
 
 // Launch server
-app.listen(port);
-console.log('Server listening on port %s.', port);
+app.listen(port, ip);
+console.log('Server listening on %s:%s', ip, port);

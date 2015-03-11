@@ -54,8 +54,6 @@ function MediaService($http, $q) {
 	}
 
 	function handleSuccess(response) {
-		// Even on success, server might have returned a load of rubbish
-		return typeof response.data === 'object' ? 
-			response.data : handleError(response);
+		return response.data;
 	}		
 }

@@ -1,7 +1,7 @@
-// can also contain host and port (default localhost / 27017)
-var databaseUrl = 'cloud'; // "username:password@example.com/mydb"
+var dbName = 'cloud';
+var databaseUrl = process.env.OPENSHIFT_MONGODB_DB_URL || 'mongodb://127.0.0.1:27017/';
 var collections = ['media'];
-var db = require('mongojs').connect(databaseUrl, collections);
+var db = require('mongojs').connect(databaseUrl + '' + dbName, collections);
 
 module.exports = db;
 
