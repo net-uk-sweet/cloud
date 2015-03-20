@@ -128,6 +128,10 @@ app.get('/api/stats', function(req, res) {
 
 	db.media.findOne(function(err, media) {
 
+		if (!media.photos) {
+			return;
+		}
+
 		var photos = media.photos,
 			lastUpdated = media.lastUpdated,
 			count = photos.length;

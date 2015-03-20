@@ -1,5 +1,3 @@
-<!-- div id="loader" ng-class="{loading: loading, loaded: loaded}"></div -->
-
 <header>
     <h1 class="fade" ng-show="selected && loaded">{{getTitle()}}</h1>
     <h2 class="fade" ng-class="{'semi-hide': animating && !selected}">{{date}}</h2>
@@ -31,18 +29,11 @@
         <button class="button icon-forward-circled" 
             ng-click="page(1)" sw-auto-fire min-speed="10" max-speed="20" steps="20"></button>
     </div>
-    <!-- div class="left">
-        <input class="slider" ng-class="{disabled: isUIDisabled()}" type="range" min="200" max="10000" 
-            value="timeRatio" step="200" ng-model="timeRatio" />
-    </div -->
+
     <div class="left">
 
     </div>
-    <!-- div class="left">
 
-        <button class="button icon-shuffle" ng-class="{disabled: isUIDisabled()}" ng-click="reverse()">
-        </button>
-    </div -->
     <div class="right">
         <a href="https://github.com/net-uk-sweet/cloud" class="button icon-github"></a>
         <a href="https://www.flickr.com/photos/7572102@N04/sets/72157638384131543/" class="button icon-flickr"></a>

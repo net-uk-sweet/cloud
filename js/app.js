@@ -23,11 +23,11 @@ function RouteConfig($routeProvider) {
 
 	$routeProvider.
 		when('/cloud', {
-			templateUrl: '/js/partials/cloud.html',
+			templateUrl: 'js/partials/cloud.html',
 			controller: 'CloudCtrl'
 		}).
 		when('/admin', {
-			templateUrl: '/js/partials/admin.html',
+			templateUrl: 'js/partials/admin.html',
 			controller: 'AdminCtrl'
 		}).
 		otherwise({
