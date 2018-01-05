@@ -11,7 +11,8 @@ function MediaService($http, $q) {
 		getStats: getStats,
 		updateMedia: updateMedia,
 		getImage: getImage,
-		getTitle: getTitle
+		getTitle: getTitle,
+		getDescription: getDescription
 	};
 
 	function getMedia() {
@@ -41,12 +42,18 @@ function MediaService($http, $q) {
 	// A utility function to avoid repeating the retrieval of images across controllers
 	function getImage(item, size) {
 		var proxy = 'api/proxy/?url=';
-		return item && proxy + _.findWhere(item.size, { label: size }).source;
+		return item && proxy + 
+			(_.findWhere(item.size, { label: size }) 
+				|| _.findWhere(item.size, { label: 'Original' })).source;
 	}
 
 	// A utility function to avoid repeating the retrieval of the title across controllers
 	function getTitle(item) {
 		return item && item.title._content || '';		
+	}
+
+	function getDescription(item) {
+		return item && item.description._content || '';
 	}
 
 	function handleError(response) {

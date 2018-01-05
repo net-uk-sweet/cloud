@@ -20,7 +20,8 @@ function swMedia($timeout, MediaService, ImageService) {
 			$scope.getSelectedImage = function(item) {
 
 				// Parse out the path to the large image from the available sizes
-				return MediaService.getImage($scope.selected, 'Large');
+				return MediaService.getImage($scope.selected, 'Large')
+					|| MediaService.getImage($scope.selected, 'Original');
 			};
 		},
 

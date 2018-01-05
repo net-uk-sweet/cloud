@@ -3,6 +3,8 @@
     <h2 class="fade" ng-class="{'semi-hide': animating && !selected}">{{date}}</h2>
 </header>
 
+<p class="description fade" ng-show="selected && loaded">{{getDescription()}}</p>
+
 <sw-media class="media fade" selected="selected" ng-show="selected && loaded" loading="loading"
     loaded="loaded" zoomed="zoomed" paused="paused" get-selected-image="getSelectedImage()"></sw-media>
 

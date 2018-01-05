@@ -36,6 +36,7 @@ function CloudCtrl($scope, $rootScope, MediaService) {
 	// Bindable methods
 	$scope.reverse = reverse;
 	$scope.getTitle = getTitle;
+	$scope.getDescription = getDescription;
 	$scope.page = page;
 	$scope.zoom = zoom;
 	$scope.isUIDisabled = isUIDisabled;
@@ -56,6 +57,10 @@ function CloudCtrl($scope, $rootScope, MediaService) {
 
 	function getTitle() {
 		return MediaService.getTitle($scope.selected);
+	}
+
+	function getDescription() {
+		return MediaService.getDescription($scope.selected);
 	}
 
 	function page(delta) {

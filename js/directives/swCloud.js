@@ -41,7 +41,7 @@ function swCloud($rootScope, $timeout, $window) {
 			'animating': '=',
 			'reversed': '=',
 			'timeRatio': '=',
-			'setSelected': '&' // Pattern for using the same / similar name which avoids shadowing? 
+			'setSelected': '&' // don't think this is used. remove with associated attribute on element 
 		},
 
 		// Possible scopes are :-
