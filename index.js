@@ -44,7 +44,7 @@ function getPhotoData(photo, _callback) {
 }
 
 function getPhotos(callback) {
-	flickr.photosets.getPhotos({ 'photoset_id': config.photoset }, function(err, results) {
+	flickr.photosets.getPhotos({ 'photoset_id': config.photoset, 'user_id': config.user }, function(err, results) {
 		// console.log('Got photos');
 		async.map(results.photoset.photo, getPhotoData, function(err, result) {
 			callback(err, result);
@@ -88,7 +88,6 @@ app.post('/api/media', function(req, res) {
 	// Need to authenticate with flickr and then get the photos
 	// TODO: we could have better error handling in this sequence
 	async.series([getFlickr, getPhotos], function(err, results) {
-
 		if (!err) {
 
 			// Replace everything in db with the results from the 2nd in the series 
@@ -99,6 +98,9 @@ app.post('/api/media', function(req, res) {
 				lastUpdated: new Date(),
 				photos: results[1] 
 			});
+
+			// console.log(db.media);
+			// console.log(db.media.find());
 
 			// Let the user know
 			res.json('Updated database');

@@ -1,0 +1,27 @@
+internal: 192.168.1.65:8081
+external: http://sweet.ddnsking.com:8080
+
+// start mongo
+sudo brew services start mongodb  
+
+// get into mongo
+mongo
+use cloud
+db.media.find();
+
+// Update database
+node index.js
+curl http://localhost:8080/api/media -X POST  
+
+nginx
+/etc/nginx/sites-available/default
+sudo service nginx reload
+
+node (5.10.0)
+/var/www/
+
+forever start index.js
+forever list
+forever stop pid
+
+
