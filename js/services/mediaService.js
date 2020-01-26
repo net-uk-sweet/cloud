@@ -18,7 +18,7 @@ function MediaService($http, $q) {
 	function getMedia() {
 		var request = $http({
 			method: 'get',
-			url: 'api/media'
+			url: 'data.json'
 		}); 
 		return request.then(handleSuccess, handleError);
 	}
