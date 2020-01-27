@@ -20,7 +20,7 @@ module.exports = function(grunt) {
 		},
 		concat: {
 			js: {
-				src: ['js/**/*.js'],
+				src: ['js/**/*.js', '!js/data.js'],
 				dest: 'dist/js/app.js'
 			},
 			css: {
@@ -58,13 +58,9 @@ module.exports = function(grunt) {
 					expand: true,
 					src: [
 						'index.html', 
-						'package.json', 
-						'index.js', 
-						'db.js', 
-						'config.json', 
 						'font/**',
-						'data/**',
-						'js/partials/**.html'
+						'js/partials/**.html',
+						'data.json'
 					],
 					dest: 'dist'
 				}]
@@ -85,7 +81,7 @@ module.exports = function(grunt) {
 				}
 			}
 		},
-		clean: ['js/partials/templates.js'],
+		clean: ['dist/**'],
 		buildcontrol: {
 			options: {
 				dir: 'dist',
@@ -112,19 +108,18 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-cssmin');
 	grunt.loadNpmTasks('grunt-contrib-copy');
 	grunt.loadNpmTasks('grunt-injector');
-	// grunt.loadNpmTasks('grunt-contrib-clean');
+	grunt.loadNpmTasks('grunt-contrib-clean');
 	grunt.loadNpmTasks('grunt-build-control');
 
 	// Configure our tasks
 	grunt.registerTask('default', [
-		// 'ngtemplates', // Stupid templates won't compile! Optimisation is minimal anyway, so I give up.
+		'clean',
 		'concat', 
 		'ngAnnotate', 
 		'uglify', 
 		'cssmin', 
 		'copy', 
-		'injector',
-		// 'clean'
+		'injector'
 	]);
 
 	grunt.registerTask('build', ['default']);

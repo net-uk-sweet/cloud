@@ -412,7 +412,7 @@ function swCloud($rootScope, $timeout, $window) {
 
 			scope.$watch('loading', function(newValue, oldValue) {
 				if (newValue && newValue !== oldValue) {
-					// console.log('Adding class loading to:', getSelected());
+					console.log('Adding class loading to:', getSelected());
 					addClass('loading');
 				}
 			});
@@ -525,6 +525,7 @@ function swCloud($rootScope, $timeout, $window) {
 		   		}, 2000);
 		    }
 
+		// init();
 
 		// v. nice, but expensive version of the render function which
 		// fades elements out when they get within a certain range 

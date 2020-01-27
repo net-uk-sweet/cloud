@@ -46,6 +46,7 @@ function CloudCtrl($scope, $rootScope, MediaService) {
 		.then(function(media) {
 			// Got data, set the media property
 			$scope.media = media;
+			// console.log($scope.media);
 		}, function(error) {
 			// No data, or bad data
 			console.log(error);

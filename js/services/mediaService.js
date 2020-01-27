@@ -41,8 +41,8 @@ function MediaService($http, $q) {
 
 	// A utility function to avoid repeating the retrieval of images across controllers
 	function getImage(item, size) {
-		var proxy = 'api/proxy/?url=';
-		return item && proxy + 
+		var proxy = window.location.hostname === 'localhost' ? 'api/proxy/?url=' : '';
+		return item && proxy +
 			(_.findWhere(item.size, { label: size }) 
 				|| _.findWhere(item.size, { label: 'Original' })).source;
 	}
