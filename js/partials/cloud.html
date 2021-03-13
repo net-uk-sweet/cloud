@@ -1,0 +1,43 @@
+<header>
+    <h1 class="fade" ng-show="selected && loaded">{{getTitle()}}</h1>
+    <h2 class="fade" ng-class="{'semi-hide': animating && !selected}">{{date}}</h2>
+</header>
+
+<p class="description fade" ng-show="selected && loaded">{{getDescription()}}</p>
+
+<sw-media class="media fade" selected="selected" ng-show="selected && loaded" loading="loading"
+    loaded="loaded" zoomed="zoomed" paused="paused" get-selected-image="getSelectedImage()"></sw-media>
+
+<!-- need to specify the scope variables we want to access as attributes -->
+<sw-cloud class="three" debug="debug" media="media" selected="selected" date="date" loading="loading" 
+    loaded="loaded" paused="paused" animating="animating" zoomed="zoomed" reversed="reversed" 
+    time-ratio="timeRatio" set-selected="setSelected">
+</sw-cloud>
+
+<div class="controls">
+    <div class="left" ng-class="{disabled: isUIDisabled()}">
+        <button class="button icon-backward-circled"   
+            ng-click="page(-1)" sw-auto-fire min-speed="10" max-speed="20" steps="20"></button>
+
+        <button class="button icon-zoom-out" ng-class="{disabled: timeRatio == minZoom}" 
+            ng-click="zoom(-1)" sw-auto-fire min-speed="10" max-speed="50" steps="20"></button>
+
+        <button class="button icon-arrows-cw" ng-class="{disabled: isUIDisabled()}" ng-click="reverse()">
+        </button> 
+
+        <button class="button icon-zoom-in" ng-class="{disabled: timeRatio == maxZoom}" 
+            ng-click="zoom(1)" sw-auto-fire min-speed="10" max-speed="50" steps="20"></button>
+
+        <button class="button icon-forward-circled" 
+            ng-click="page(1)" sw-auto-fire min-speed="10" max-speed="20" steps="20"></button>
+    </div>
+
+    <div class="left">
+
+    </div>
+
+    <div class="right">
+        <a href="https://github.com/net-uk-sweet/cloud" class="button icon-github"></a>
+        <a href="https://www.flickr.com/photos/7572102@N04/sets/72157638384131543/" class="button icon-flickr"></a>
+    </div>
+</div>
