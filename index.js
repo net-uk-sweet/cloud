@@ -25,6 +25,7 @@ app.get('/api/proxy', function(req, res) {
 	// res.send('hello' + req.query.url);
 	request.get(req.query.url, function(response) {
 		console.log('proxy error', response);
+		if (!response) return;
 		res.send(response);
 	}).pipe(res);
 });

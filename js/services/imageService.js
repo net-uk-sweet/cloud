@@ -26,9 +26,9 @@ function ImageService($http, $q) {
 		};
 
 		xmlHttp.onprogress = function(e) {
-
-			// console.log('ImageService.onprogress(): ', e.loaded / e.total);
-			loadProgress = e.loaded / e.total;
+			// console.log('ImageService.onprogress(): ', e.loaded / 1000);
+			// loadProgress = e.loaded / e.total; 
+			loadProgress = e.loaded / 1000; // hardcoded to about a meg. chrome 64 and gzip = no total
 
 			progressCallback(loadProgress);
 		};
