@@ -50,13 +50,19 @@ function init() {
 					size: size.filter(photo => ['Original', 'Medium', 'Large'].includes(photo.label)).map(filteredPhoto => {
 						return {
 							...filteredPhoto,
-							source: 'http://ian.sweet.uk.net/cloud/proxy-flickr/' + filteredPhoto.source.slice(30)
+							source: 'https://api.codetabs.com/v1/proxy/?quest=' + filteredPhoto.source
 						}
 					})
 				}
 			});
+			// console.log(mappedResults);
 			fs.writeFileSync('data.json', JSON.stringify(mappedResults));
-			process.exit(-1);
+			// fs.writeFile("data.json", JSON.stringify(mappedResults), err => { 
+			// 	// Checking for errors 
+			//    if (err) throw err;  
+			//    console.log("Done writing"); // Success 
+			//  }); 
+			process.exit();
 
 			// Replace everything in db with the results from the 2nd in the series 
 			// of async calls and a lastModfied date which we can reflect to the admin
@@ -73,6 +79,7 @@ function init() {
 			// Let the user know
 			// res.json('Updated database');
 		} else {
+			// console.log(err);
 			// res.send(err);
 		}
 	});
@@ -84,7 +91,7 @@ function getFlickr(callback) {
 	
 	var flickrConfig = { 
 		api_key: config.key, 
-		secret: config.secret 
+		secret: process.env.FLICKR_API_SECRET 
 	};
 
 	Flickr.tokenOnly(flickrConfig, function(err, _flickr) {
