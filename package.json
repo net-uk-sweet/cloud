@@ -22,7 +22,7 @@
     "moment": "^2.8.3",
     "q": "~0.9.7",
     "request": "^2.53.0",
-    "underscore": "~1.5.2"
+    "underscore": "~1.12.1"
   },
   "devDependencies": {
     "grunt": "~0.4.1",
