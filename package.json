@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "async": "~0.2.9",
-    "express": "~3.4.6",
+    "express": "~4.17.3",
     "flickrapi": "^0.3.26",
     "moment": "^2.8.3",
     "q": "~0.9.7",
